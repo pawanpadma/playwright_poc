@@ -2,6 +2,7 @@ import { BasePage, expect } from "./base-page";
 
 
 
+
 export class HomePage extends BasePage {
 
      a =  this.page.locator('div:nth-child(2) > a');
@@ -12,11 +13,11 @@ export class HomePage extends BasePage {
      f =  this.page.getByRole('button', { name: 'Get Quote' });
      g = this.page.getByText('Enter Loan Amount!');
 
-     public async searchForProduct() {
+     public async searchForProduct(loginData) {
    
         const page = this.page;
         const logger = this.logger;
-        this.logger.log('Performing action...');
+        this.logger.log('action action...'+loginData.userName);
         await this.page.goto("/");
         this.logger.log('Performing action...');
         await this.a.first().click();
