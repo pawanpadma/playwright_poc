@@ -1,5 +1,7 @@
 import { BasePage, expect } from "./base-page";
 
+
+
 export class HomePage extends BasePage {
 
      a =  this.page.locator('div:nth-child(2) > a');
@@ -13,9 +15,14 @@ export class HomePage extends BasePage {
      public async searchForProduct() {
    
         const page = this.page;
+        const logger = this.logger;
+        this.logger.log('Performing action...');
         await this.page.goto("/");
+        this.logger.log('Performing action...');
         await this.a.first().click();
+        this.logger.log('Performing action...');
         await this.b.click();
+        this.logger.log('Performing action...');
       }
 
 }

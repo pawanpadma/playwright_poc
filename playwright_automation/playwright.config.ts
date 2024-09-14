@@ -7,7 +7,15 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [["list"], ["html", {open: "on-failure"}]],
+  reporter: [["list"], ["html", {outputFolder:'my-report',open:'never'}],
+  ['monocart-reporter', {
+    name: "My Test Report",
+    outputFile: './monocart-report/index.html',
+    includeAnnotations: true, // Include annotations in the report
+  }]
+  
+],
+
 
   use: {
     //baseURL: 'https://www.saucedemo.com',
@@ -16,6 +24,7 @@ export default defineConfig({
     actionTimeout: 90 * 1000,
     navigationTimeout: 90 * 1000,
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
 
   projects: [
