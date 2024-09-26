@@ -15,7 +15,7 @@ jobs:
         node-version: lts/*
     - name: Install dependencies
       #run: npx install --package-lock-only
-      run: npm@5 ci
+      run: npx ci
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
