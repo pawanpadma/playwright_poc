@@ -9,4 +9,5 @@ export class BasePage {
   }
 }
 
+
 export { expect, Page } from "@playwright/test";
