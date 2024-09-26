@@ -18,11 +18,15 @@ test("@P2 @Smoke1 verify user login with valid invalid creds and logout successf
 test("@P2 @Smoke1 verify user login with valid invalid creds and logout successfullyy", async ({ page }) => {
   const logger = new Logger();
   const pages = Pages(page,logger);
+  logger.log("444444");
+  expect(true).toBe(false);
 
   // Login with valid credentials
   await pages.homePage.searchForProduct(loginData);
   logger.log("second");
-  test.info().annotations.push({ type: 'console', description: logger.getLogs() });
-  expect(true).toBe(false);
+ 
+ 
+
+   test.info().annotations.push({ type: 'console', description: logger.getLogs() });
 
 });

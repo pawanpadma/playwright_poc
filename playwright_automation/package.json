@@ -11,5 +11,8 @@
     "@playwright/test": "^1.47.1",
     "@types/node": "^22.3.0",
     "monocart-reporter": "^2.8.0"
+  },
+  "dependencies": {
+    "ci": "^2.3.0"
   }
 }
