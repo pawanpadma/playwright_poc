@@ -28,3 +28,8 @@ jobs:
         name: playwright-report
         path: ./playwright_automation/monocart-report/index.html
         retention-days: 30
+    - name: Upload screenshots
+      uses: actions/upload-artifact@v4
+      with:
+        name: screenshots
+        path: ./playwright_automation/monocart-report/attachments  
