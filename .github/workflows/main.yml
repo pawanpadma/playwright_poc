@@ -26,6 +26,5 @@ jobs:
       if: ${{ !cancelled() }}
       with:
         name: playwright-report
-        working-directory: ./playwright_automation
-        path: ./monocart-report/index.html
+        path: ./playwright_automation/monocart-report/index.html
         retention-days: 30
