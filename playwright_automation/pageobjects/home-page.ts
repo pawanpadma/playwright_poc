@@ -26,4 +26,16 @@ export class HomePage extends BasePage {
         this.logger.log('Performing action...');
       }
 
+     function getLocalDate(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+const localDate = getLocalDate();
+console.log(localDate); // Output: YYYY-MM-DD
+
+
 }
