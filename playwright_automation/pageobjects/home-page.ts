@@ -26,16 +26,22 @@ export class HomePage extends BasePage {
         this.logger.log('Performing action...');
       }
 
-     function getLocalDate(): string {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, '0');
-    const day = today.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    function subtractOneMonth(dateString: string): string {
+    const [year, month, day] = dateString.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setMonth(date.getMonth() - 1);
+
+    const newYear = date.getFullYear();
+    const newMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+    const newDay = date.getDate().toString().padStart(2, '0');
+
+    return `${newYear}-${newMonth}-${newDay}`;
 }
 
-const localDate = getLocalDate();
-console.log(localDate); // Output: YYYY-MM-DD
+const originalDate = "2024-11-19";
+const newDate = subtractOneMonth(originalDate);
+console.log(newDate); // Output: 2024-10-19
+
 
 
 }
