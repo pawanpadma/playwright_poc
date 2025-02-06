@@ -16,3 +16,15 @@ test('get started link', async ({ page }) => {
   // Expects page to have a heading with the name of Installation.
   await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
 });
+
+// Get the current date
+const currentDate = new Date();
+
+// Subtract 15 years from the current date
+const pastDate = new Date();
+pastDate.setFullYear(currentDate.getFullYear() - 15);
+
+// Format the past date to MM/YYYY
+const formattedPastDate = `${(pastDate.getMonth() + 1).toString().padStart(2, '0')}/${pastDate.getFullYear()}`;
+
+console.log(`15 years back date: ${formattedPastDate}`);
