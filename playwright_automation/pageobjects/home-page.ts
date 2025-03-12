@@ -95,6 +95,17 @@ const nextReleaseDate = getReleaseDate();
 console.log("Next Release Date:", nextReleaseDate);
 
 
+function generateRandomString(length: number): string {
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    // Generate a random lowercase letter (a–z)
+    const randomCharCode = Math.floor(Math.random() * 26) + 97;
+    result += String.fromCharCode(randomCharCode);
+  }
+  return result;
+}
 
+const randomString = generateRandomString(10);
+console.log(randomString);
 
 }
