@@ -5,24 +5,22 @@ playwright_poc
 const options = await page.$$eval('select#dropdownId option', options => options.map(option => option.value));
 console.log(options);
 
-
-import { defineConfig } from '@playwright/test';
+// global-setup.ts
+import * as fs from 'fs';
 import * as path from 'path';
+import { chromium } from '@playwright/test';
 
-export default defineConfig({
-  testDir: './tests',
-  fullyParallel: true,
-  reporter: 'html',
-  use: {
-    trace: 'on-first-retry',
-  },
-  projects: [
-    {
-      name: 'chromium',
-      use: { browserName: 'chromium' },
-    },
-  ],
-  // Add the following for code coverage
-  globalSetup: require.resolve('./global-setup'),
-  globalTeardown: require.resolve('./global-teardown'),
-});
+export default async function globalSetup() {
+  // Start coverage
+  await require('nyc').createInstance({
+    cwd: __dirname,
+    reporter: ['text', 'html'],
+  }).wrap();
+
+  // Launch browser and save state
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  await context.tracing.start({ screenshots: true, snapshots: true });
+  await context.tracing.stop({ path: 'test-trace.zip' });
+  await browser.close();
+}
