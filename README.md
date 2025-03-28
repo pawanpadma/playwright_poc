@@ -1,27 +1,22 @@
-# playwright_poc
-playwright_poc
+  merge-reports:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v3
+        with:
+          path: results
 
+      - name: Merge Monocart reports
+        run: |
+          npx monocart-reporter-merge results/**/report.json --output results/merged-report.json
 
-const options = await page.$$eval('select#dropdownId option', options => options.map(option => option.value));
-console.log(options);
+      - name: Generate Monocart report
+        run: |
+          npx monocart-reporter results/merged-report.json --output merged-report
 
-export function getPageTitle(title: string): string {
-  return `Page Title: ${title}`;
-}
-
-import { test, expect } from '@playwright/test';
-import { getPageTitle } from '../src/app';
-
-test('example test with code coverage', async ({ page }) => {
-  // Navigate to the sample website
-  await page.goto('https://example.com');
-
-  // Get the page title
-  const title = await page.title();
-
-  // Use the function from src/app.ts
-  const formattedTitle = getPageTitle(title);
-
-  // Assert the formatted title
-  expect(formattedTitle).toBe('Page Title: Example Domain');
-});
+      - name: Upload merged report
+        uses: actions/upload-artifact@v3
+        with:
+          name: merged-report
+          path: merged-report
