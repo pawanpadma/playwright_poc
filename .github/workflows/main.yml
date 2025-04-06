@@ -11,13 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test_file: [
-          "tests/home.spec.ts",
-          "tests/mydemo.spec.ts,
-         
-          ]
-        # You can combine with browsers if needed:
-        # browser: [chromium, firefox]
+       test_file:  ["tests/mydemo.spec.ts","tests/home.spec.ts"]
       fail-fast: false
     
     steps:
@@ -35,11 +29,7 @@ jobs:
       run: npx playwright install
     
     - name: Run specific test group
-      run: |
-        # Run only tests matching the current group
-        npx playwright test \
-          --grep "${{ matrix.test_group }}" \
-          --reporter=html
+      run: npx playwright test --grep "@${{ matrix.test_group }}" --reporter=html
       env:
         PLAYWRIGHT_HTML_REPORT: playwright-report-${{ matrix.test_group }}
     
@@ -76,9 +66,7 @@ jobs:
     
     - name: Merge HTML reports
       run: |
-        # Install the merge tool
         npm install -g playwright-merge-html-reports
-        # Merge all reports
         playwright-merge-html-reports --input all-reports --output merged-report
     
     - name: Upload merged report
