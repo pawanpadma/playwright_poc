@@ -13,10 +13,8 @@ jobs:
       matrix:
         # Define your test groups here
         test_group: [
-          "auth",
-          "dashboard",
-          "profile",
-          "settings"
+          "smoke1",
+          "P1"
         ]
         # You can combine with browsers if needed:
         # browser: [chromium, firefox]
