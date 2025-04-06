@@ -14,7 +14,7 @@ export default defineConfig({
   use: {
     //baseURL: 'https://www.saucedemo.com',
     baseURL: 'https://deal4loans.com',
-    headless: false,
+    headless: 'new',
     actionTimeout: 90 * 1000,
     navigationTimeout: 90 * 1000,
     trace: 'on-first-retry',
