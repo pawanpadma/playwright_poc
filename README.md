@@ -18,3 +18,4 @@
           const jsonFiles = getAllJsonFiles('./results');
           console.log(JSON.stringify(jsonFiles));
           "
+
