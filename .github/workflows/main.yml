@@ -13,6 +13,9 @@ jobs:
       matrix:
        test_file:  ["tests/mydemo.spec.ts","tests/home.spec.ts"]
       fail-fast: false
+    defaults:
+      run:
+        working-directory: ./playwright_poc/playwright_automation
     
     steps:
     - uses: actions/checkout@v4
