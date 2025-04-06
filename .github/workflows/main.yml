@@ -11,51 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-       test_file:  ["tests/mydemo.spec.ts","tests/home.spec.ts"]
+        test_file:  ["tests/mydemo.spec.ts","tests/home.spec.ts"]
       fail-fast: false
+    
     steps:
     - uses: actions/checkout@v4
     
-    - name: Discover repository structure
+    - name: Verify directory structure
       run: |
-        echo "Current directory: $(pwd)"
-        echo "Repository contents:"
+        echo "Working directory: $(pwd)"
         ls -la
-        echo "If you see your project directory, note its exact name below:"
-        ls -la */
-
-    
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Install Playwright browsers
-      run: npx playwright install
-    
-    - name: Run specific test group
-      run: npx playwright test --grep "@${{ matrix.test_group }}" --reporter=html
-      env:
-        PLAYWRIGHT_HTML_REPORT: playwright-report-${{ matrix.test_group }}
-    
-    - name: Rename HTML report directory
-      run: mv playwright-report $PLAYWRIGHT_HTML_REPORT
-    
-    - name: Upload HTML report artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: html-report-${{ matrix.test_group }}
-        path: ${{ env.PLAYWRIGHT_HTML_REPORT }}
-        retention-days: 1
-
-  merge-reports:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
     
     - name: Set up Node.js
       uses: actions/setup-node@v4
@@ -64,18 +29,51 @@ jobs:
     
     - name: Install dependencies
       run: npm ci
+      
+    - name: Install Playwright browsers
+      run: npx playwright install
+    
+    - name: Run specific test group
+      run: npx playwright test --grep "@${{ matrix.test_group }}" --reporter=html
+      env:
+        PLAYWRIGHT_HTML_REPORT: playwright-report-${{ matrix.test_group }}
+    
+    - name: Prepare report for upload
+      run: |
+        mv playwright-report $PLAYWRIGHT_HTML_REPORT || true
+        mkdir -p artifacts
+        cp -r $PLAYWRIGHT_HTML_REPORT artifacts/
+    
+    - name: Upload HTML report artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: html-report-${{ matrix.test_group }}
+        path: artifacts/$PLAYWRIGHT_HTML_REPORT
+        retention-days: 1
+
+  merge-reports:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
     
     - name: Download all report artifacts
       uses: actions/download-artifact@v4
       with:
-        path: all-reports
+        path: artifacts
         pattern: html-report-*
         merge-multiple: true
     
     - name: Merge HTML reports
       run: |
         npm install -g playwright-merge-html-reports
-        playwright-merge-html-reports --input all-reports --output merged-report
+        playwright-merge-html-reports --input artifacts --output merged-report
     
     - name: Upload merged report
       uses: actions/upload-artifact@v4
