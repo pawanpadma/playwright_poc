@@ -26,7 +26,7 @@ export default defineConfig({
       name: 'chromium',
       use: { 
         channel: 'chrome', // Use Chrome for Testing
-        headless: 'new'    // Modern headless mode
+        headless: true    // Modern headless mode
       },
     },
 
