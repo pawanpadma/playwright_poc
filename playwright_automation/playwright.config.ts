@@ -7,14 +7,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [["list"], ["html", {outputFolder:'my-report',open:'never'}],
-  ['monocart-reporter', {
-    name: "My Test Report",
-    outputFile: './monocart-report/index.html',
-    includeAnnotations: true, // Include annotations in the report
-  }]
   
-],
+ reporter: [['html', { open: 'never' }]],
 
 
   use: {
