@@ -45,7 +45,10 @@ jobs:
     - name: Install Playwright browsers
       working-directory: ${{ env.PROJECT_DIR }}
       run: npx playwright install
-    
+    - name: Install Chrome for Testing
+      run: |
+        npx playwright install chrome
+        npx playwright install-deps
     - name: Run specific test group
       working-directory: ${{ env.PROJECT_DIR }}
       run: npx playwright test --grep "@${{ matrix.test_group }}" --reporter=html
