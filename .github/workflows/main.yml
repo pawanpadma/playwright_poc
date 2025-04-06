@@ -16,11 +16,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Verify directory structure
+    - name: Discover repository structure
       run: |
+        echo "Current directory: $(pwd)"
+        echo "Repository contents:"
         ls -la
-        ls -la playwright_poc/
-        ls -la playwright_poc/playwright_automation/
+        echo "If you see your project directory, note its exact name below:"
+        ls -la */
 
     
     - name: Set up Node.js
