@@ -1,34 +1,91 @@
-name: Playwright Tests
+name: Playwright Tests with Test Case Matrix
+
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
-  schedule:
-    - cron: '45 11 * * *'  
+    branches: [main, master]
+
 jobs:
   test:
-    timeout-minutes: 60
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: Install dependencies
-      #run: npx install --package-lock-only
-      run: npx ci 
-      working-directory: ./playwright_automation
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test --grep "@smoke1"
-      working-directory: ./playwright_automation
-    - name: Upload Monocart report  
-      uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: ./playwright_automation/monocart-report
-        retention-days: 30
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Define your test groups here
+        test_group: [
+          "auth",
+          "dashboard",
+          "profile",
+          "settings"
+        ]
+        # You can combine with browsers if needed:
+        # browser: [chromium, firefox]
+      fail-fast: false
     
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright browsers
+      run: npx playwright install
+    
+    - name: Run specific test group
+      run: |
+        # Run only tests matching the current group
+        npx playwright test \
+          --grep "${{ matrix.test_group }}" \
+          --reporter=html
+      env:
+        PLAYWRIGHT_HTML_REPORT: playwright-report-${{ matrix.test_group }}
+    
+    - name: Rename HTML report directory
+      run: mv playwright-report $PLAYWRIGHT_HTML_REPORT
+    
+    - name: Upload HTML report artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: html-report-${{ matrix.test_group }}
+        path: ${{ env.PLAYWRIGHT_HTML_REPORT }}
+        retention-days: 1
+
+  merge-reports:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Download all report artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: all-reports
+        pattern: html-report-*
+        merge-multiple: true
+    
+    - name: Merge HTML reports
+      run: |
+        # Install the merge tool
+        npm install -g playwright-merge-html-reports
+        # Merge all reports
+        playwright-merge-html-reports --input all-reports --output merged-report
+    
+    - name: Upload merged report
+      uses: actions/upload-artifact@v3
+      with:
+        name: merged-html-report
+        path: merged-report
+        retention-days: 7
