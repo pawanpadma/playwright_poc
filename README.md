@@ -1,22 +1,20 @@
-  merge-reports:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all test results
-        uses: actions/download-artifact@v3
-        with:
-          path: results
-
-      - name: Merge Monocart reports
+  - name: Search for JSON Files
         run: |
-          npx monocart-reporter-merge results/**/report.json --output results/merged-report.json
-
-      - name: Generate Monocart report
-        run: |
-          npx monocart-reporter results/merged-report.json --output merged-report
-
-      - name: Upload merged report
-        uses: actions/upload-artifact@v3
-        with:
-          name: merged-report
-          path: merged-report
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          function getAllJsonFiles(dirPath, arrayOfFiles = []) {
+              const files = fs.readdirSync(dirPath);
+              files.forEach(file => {
+                  const filePath = path.join(dirPath, file);
+                  if (fs.statSync(filePath).isDirectory()) {
+                      arrayOfFiles = getAllJsonFiles(filePath, arrayOfFiles);
+                  } else if (file.endsWith('.json')) {
+                      arrayOfFiles.push(filePath);
+                  }
+              });
+              console.log(arrayOfFiles);
+          }
+          const jsonFiles = getAllJsonFiles('./results');
+          console.log(JSON.stringify(jsonFiles));
+          "
