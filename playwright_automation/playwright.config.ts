@@ -23,8 +23,11 @@ export default defineConfig({
 
   projects: [
     {
-      name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+      name: 'chromium',
+      use: { 
+        channel: 'chrome', // Use Chrome for Testing
+        headless: 'new'    // Modern headless mode
+      },
     },
 
     /*
