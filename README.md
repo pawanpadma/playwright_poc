@@ -1,21 +1,27 @@
-  - name: Search for JSON Files
-        run: |
-          node -e "
-          const fs = require('fs');
-          const path = require('path');
-          function getAllJsonFiles(dirPath, arrayOfFiles = []) {
-              const files = fs.readdirSync(dirPath);
-              files.forEach(file => {
-                  const filePath = path.join(dirPath, file);
-                  if (fs.statSync(filePath).isDirectory()) {
-                      arrayOfFiles = getAllJsonFiles(filePath, arrayOfFiles);
-                  } else if (file.endsWith('.json')) {
-                      arrayOfFiles.push(filePath);
-                  }
-              });
-              console.log(arrayOfFiles);
-          }
-          const jsonFiles = getAllJsonFiles('./results');
-          console.log(JSON.stringify(jsonFiles));
-          "
+  merge-reports:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: html-report-*
+          path: reports
+
+      - name: Install merge tool
+        run: npm install -D playwright-merge-html-reports
+
+      - name: Merge HTML reports
+        run: |
+          npx playwright-merge-html-reports \
+            --input ./reports \
+            --output merged-report
+
+      - name: Upload merged HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-html-report
+          path: merged-report/
