@@ -67,6 +67,10 @@ jobs:
       #     name: report-${{ matrix.name }}
       #     path: playwright-report
       #     retention-days: 5
+      - name: Debug blob-report contents
+        run: |
+          echo "Blob report contents:"
+          ls -R blob-report || echo "blob-report missing!"
 
       - name: Upload raw report for ${{ matrix.name }}
         uses: actions/upload-artifact@v4
@@ -126,10 +130,19 @@ jobs:
         with:
           path: all-reports
 
+      # - name: Merge reports into HTML
+      #   run: |
+      #     mkdir merged-report
+      #     npx playwright merge-reports --reporter html ./all-reports/**/
+      #     mv playwright-report merged-report/
+
       - name: Merge reports into HTML
         run: |
           mkdir merged-report
-          npx playwright merge-reports --reporter html ./all-reports/**/
+          find all-reports -type d -name "blob-report" > report-dirs.txt
+          echo "Found these blob reports:"
+          cat report-dirs.txt
+          npx playwright merge-reports --reporter html $(cat report-dirs.txt)
           mv playwright-report merged-report/
 
       - name: Upload merged HTML report
