@@ -20,10 +20,10 @@ jobs:
             name: Test3
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '16'
 
@@ -35,7 +35,7 @@ jobs:
           npx playwright test --config=playwright.config.ts --grep-file=${{ matrix.testFile }} --reporter=json,json-report-${{ matrix.name }}.json
 
       - name: Upload individual reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: json-report-${{ matrix.name }}
           path: json-report-${{ matrix.name }}.json
@@ -45,10 +45,10 @@ jobs:
     needs: tests
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download all reports
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Merge JSON Reports
         run: |
