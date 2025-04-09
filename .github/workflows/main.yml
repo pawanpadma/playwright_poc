@@ -41,8 +41,8 @@ jobs:
       - name: Upload individual reports
         uses: actions/upload-artifact@v4
         with:
-          name: json-report-${{ matrix.name }}
-          path: json-report-${{ matrix.name }}.json
+          name:  json-report-${{ matrix.name }}
+          path: ./playwright_automation/json-report-${{ matrix.name }}.json
 
   merge-reports:
     runs-on: ubuntu-latest
@@ -51,9 +51,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: install html reporter
-        run: |
-          npm install playwright-json-to-html-reporter  
+    
 
       - name: Download all reports
         uses: actions/download-artifact@v4
