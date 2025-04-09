@@ -45,7 +45,7 @@ jobs:
       - name: List report directory
         run: |
           echo "Checking contents of workspace..."
-          ls -la test-results
+          ls -la 
           echo "---"
           ls -la playwright_automation
           echo "---"
