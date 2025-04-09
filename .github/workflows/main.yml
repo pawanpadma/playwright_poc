@@ -28,7 +28,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install playwright_poc/playwright_automation/package.json
+        run: npm install playwright_poc/playwright_automation
 
       - name: Run Playwright Test
         run: |
