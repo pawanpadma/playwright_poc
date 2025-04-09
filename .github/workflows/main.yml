@@ -35,7 +35,8 @@ jobs:
 
       - name: Run Playwright Test
         run: |
-          xvfb-run npx playwright test ${{ matrix.testFile }} --config=./playwright_automation/playwright.config.ts --reporter=json continue-on-error: true
+          xvfb-run npx playwright test ${{ matrix.testFile }} --config=./playwright_automation/playwright.config.ts --reporter=json
+        continue-on-error: true
 
       - name: Upload individual reports
         uses: actions/upload-artifact@v4
