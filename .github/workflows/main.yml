@@ -26,6 +26,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+        
+      - name: change directry
+        run: cd playwright_poc/playwright_automation
 
       - name: Install dependencies
         run: npm install playwright_poc/playwright_automation
