@@ -55,11 +55,11 @@ jobs:
         run: |
           echo "Checking contents of workspace..."
           ls -la 
-          echo "--- test-results"
-          ls -la test-results
-          echo "--- test-results"
+          echo "--- blob-report"
+          ls -la blob-report
+          echo "--- blob-report"
          
-          ls -la test-results || echo "test-results directory not found"  
+          ls -la blob-report || echo "test-results directory not found"  
 
       # - name: Upload HTML report for ${{ matrix.name }}
       #   uses: actions/upload-artifact@v4
@@ -76,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: report-${{ matrix.name }}
-          path: playwright_automation/.blob-report
+          path: blob-report
 
   # merge-reports:
   #   name: Merge All Reports
