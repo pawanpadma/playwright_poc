@@ -152,27 +152,35 @@ jobs:
           echo "🧾 report.jsonl contents:"
           find extracted-reports -name report.jsonl -exec echo {} \; -exec cat {} \;
       
-      - name: Merge reports into HTML
-        run: |
-          mkdir -p merged-report
-      
-          # Find folders containing report.jsonl
-          echo "🔍 Searching for valid report folders..."
-          mapfile -t report_dirs < <(find extracted-reports -type f -name "report.jsonl" -exec dirname {} \;)
-      
-          echo "📂 Merging reports from:"
-          printf '%s\n' "${report_dirs[@]}"
-      
-          if [ "${#report_dirs[@]}" -eq 0 ]; then
-            echo "❌ No valid reports found to merge."
-            exit 1
-          fi
-      
-          # Merge them
-          npx playwright merge-reports --reporter html "${report_dirs[@]}"
-      
-          # Move final HTML report into a folder
-          mv playwright-report merged-report
+          - name: Merge reports into HTML
+          run: |
+            mkdir -p merged-report
+        
+            # Rename each extracted report dir to include .report
+            echo "🔁 Renaming extracted folders to .report..."
+            for dir in extracted-reports/*; do
+              if [ -f "$dir/report.jsonl" ]; then
+                mkdir -p "$dir/.report"
+                mv "$dir/report.jsonl" "$dir/.report/"
+              fi
+            done
+        
+            # Find and collect .report folders
+            echo "🔍 Collecting valid .report folders..."
+            mapfile -t report_dirs < <(find extracted-reports -type d -name ".report")
+        
+            echo "📂 Merging reports from:"
+            printf '%s\n' "${report_dirs[@]}"
+        
+            if [ "${#report_dirs[@]}" -eq 0 ]; then
+              echo "❌ No valid reports found to merge."
+              exit 1
+            fi
+        
+            # Merge
+            npx playwright merge-reports --reporter html "${report_dirs[@]}"
+            mv playwright-report merged-report
+        
       
 
       - name: Upload merged HTML report
