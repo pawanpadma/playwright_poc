@@ -119,42 +119,46 @@ jobs:
   #         name: merged-html-report
   #         path: merged-report/
 
-  merge-reports:
-    needs: test
-    runs-on: ubuntu-latest
-    name: Merge Reports
+    merge-reports:
+      runs-on: ubuntu-latest
+      needs: test
+      steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    steps:
       - name: Download all blob reports
         uses: actions/download-artifact@v4
         with:
           path: all-reports
-          merge-multiple: true
-          extract: true
+          merge-multiple: true # ZIPs will be saved here, one per matrix
 
-      # - name: Merge reports into HTML
-      #   run: |
-      #     mkdir merged-report
-      #     npx playwright merge-reports --reporter html ./all-reports/**/
-      #     mv playwright-report merged-report/
-      - name: Debug artifact structure
+      - name: Debug structure (before unzip)
+        run: find all-reports
+
+      - name: Extract all report ZIPs
         run: |
-          echo "Directory tree of all-reports:"
-          find all-reports
-          echo "--- Directory-report"
-          ls -la 
-          
+          mkdir extracted-reports
+          for zip in all-reports/*.zip; do
+          foldername=$(basename "$zip" .zip)
+          mkdir "extracted-reports/$foldername"
+          unzip -q "$zip" -d "extracted-reports/$foldername"
+          done
+
+      - name: Debug extracted structure
+        run: find extracted-reports
+
       - name: Merge reports into HTML
         run: |
-            mkdir merged-report
-            find all-reports -type d -exec test -f "{}/report.jsonl" \; -print > report-dirs.txt
-            echo "Found valid report directories:"
-            cat report-dirs.txt
-            npx playwright merge-reports --reporter html $(cat report-dirs.txt)
-            mv playwright-report merged-report/
+          mkdir merged-report
+          find extracted-reports -type f -name "report.jsonl" -exec dirname {} \; > report-dirs.txt
+          echo "Merging reports from:"
+          cat report-dirs.txt
+          npx playwright merge-reports --reporter html $(cat report-dirs.txt)
+          mv playwright-report merged-report
 
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
         with:
           name: merged-html-report
-          path: merged-report/
+          path: merged-report
+
