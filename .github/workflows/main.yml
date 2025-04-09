@@ -51,14 +51,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: install html reporter
+        uses: npm install playwright-json-to-html-reporter  
+
       - name: Download all reports
         uses: actions/download-artifact@v4
 
+    
       - name: Merge JSON Reports
         run: |
-          mkdir -p merged-report
-          npx playwright merge-json-reports json-report-*.json -o merged-report/merged-report.json
+          node merge-reports.js
 
       - name: Generate Unified HTML Report
         run: |
-          npx playwright show-report merged-report/merged-report.json
+          npx playwright show-report merged-report/merged-report.json  
+
+      # - name: Merge JSON Reports
+      #   run: |
+      #     mkdir -p merged-report
+      #     npx playwright merge-json-reports json-report-*.json -o merged-report/merged-report.json
+
+      # - name: Generate Unified HTML Report
+      #   run: |
+      #     npx playwright show-report merged-report/merged-report.json
