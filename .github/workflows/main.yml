@@ -29,13 +29,13 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install ./playwright_automation
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
       - name: Run test file
-        run: npx playwright test ${{ matrix.file }}
+        run: npx playwright test ${{ matrix.testFile }}
 
       - name: Upload HTML report for ${{ matrix.name }}
         uses: actions/upload-artifact@v4
