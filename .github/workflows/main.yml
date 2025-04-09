@@ -35,7 +35,7 @@ jobs:
 
       - name: Run Playwright Test
         run: |
-          npx playwright test --config=playwright.config.ts --grep-file=${{ matrix.name }} --reporter=json,json-report-${{ matrix.name }}.json
+          npx playwright test ${{ matrix.testFile }} --config=playwright.config.ts --reporter=json,json-report-${{ matrix.name }}.json
 
       - name: Upload individual reports
         uses: actions/upload-artifact@v4
