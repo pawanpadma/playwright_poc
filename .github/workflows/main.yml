@@ -39,7 +39,7 @@ jobs:
           echo "Running file: ${{ matrix.testFile }}"  
 
       - name: Run test file
-        run: npx playwright test ${{ matrix.testFile }} --reporter=blob
+        run: xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=blob
           echo "✅ Test run finished. Inspecting .blob-report contents..."
           find .blob-report
         working-directory: playwright_automation
