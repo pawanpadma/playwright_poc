@@ -119,7 +119,7 @@ jobs:
   #         name: merged-html-report
   #         path: merged-report/
 
-    merge-reports:
+  merge-reports:
       runs-on: ubuntu-latest
       needs: test
       steps:
