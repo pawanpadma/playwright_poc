@@ -156,11 +156,11 @@ jobs:
 
       - name: Extract all report ZIPs
         run: |
-          mkdir extracted-reports
+          mkdir -p extracted-reports
           for zip in all-reports/*.zip; do
-          foldername=$(basename "$zip" .zip)
-          mkdir "extracted-reports/$foldername"
-          unzip -q "$zip" -d "extracted-reports/$foldername"
+            foldername=$(basename "$zip" .zip)
+            mkdir -p "extracted-reports/$foldername/.blob-report"
+            unzip -q "$zip" -d "extracted-reports/$foldername/.blob-report"
           done
 
       - name: Debug extracted structure
