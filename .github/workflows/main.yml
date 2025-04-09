@@ -28,7 +28,7 @@ jobs:
           node-version: '20'
         
       - name: change directry
-        run: cd playwright_poc/playwright_automation
+        run: find playwright_poc -name "package.json"
 
       - name: Install dependencies
         run: npm install playwright_poc/playwright_automation
