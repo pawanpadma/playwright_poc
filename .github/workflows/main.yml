@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: report-${{ matrix.name }}
-          path: playwright-report/
+          path: my-report
           retention-days: 5
 
   merge-reports:
