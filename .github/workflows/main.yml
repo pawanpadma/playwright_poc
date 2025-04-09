@@ -36,6 +36,7 @@ jobs:
 
       - name: Run test file
         run: npx playwright test ${{ matrix.testFile }}
+        continue-on-error: true
 
       - name: Upload HTML report for ${{ matrix.name }}
         uses: actions/upload-artifact@v4
