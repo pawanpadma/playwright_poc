@@ -11,11 +11,11 @@ export default defineConfig({
   reporter: [["list"], 
   ["html", {outputFolder:'my-report',open:'never'}],
   ['json', {outputFile: 'my-report/json-report.json' }],
-  ['monocart-reporter', {
-    name: "My Test Report",
-    outputFile: './monocart-report/index.html',
-    includeAnnotations: true, // Include annotations in the report
-  }]
+  // ['monocart-reporter', {
+  //   name: "My Test Report",
+  //   outputFile: './monocart-report/index.html',
+  //   includeAnnotations: true, // Include annotations in the report
+  // }]
   
 ],
 

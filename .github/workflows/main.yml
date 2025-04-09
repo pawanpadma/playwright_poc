@@ -34,8 +34,12 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
+      - name: Debug test file path
+        run: |
+          echo "Running file: ${{ matrix.testFile }}"  
+
       - name: Run test file
-        run: npx playwright test ${{ matrix.testFile }}
+        run: npx playwright test ${{ matrix.testFile }} --reporter=list,html,json
         continue-on-error: true
 
       - name: List report directory
