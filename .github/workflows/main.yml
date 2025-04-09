@@ -177,20 +177,21 @@ jobs:
   
       - name: Merge reports into HTML
         run: |
-            mkdir ../merged-report
-            mapfile -t report_dirs < <(find ../extracted-reports -type f -name "report.jsonl" -exec dirname {} \;)
-            
+            mkdir merged-report
+            # Collect folders containing report.jsonl
+            mapfile -t report_dirs < <(find extracted-reports -type f -name "report.jsonl" -exec dirname {} \;)
+        
             echo "Merging reports from:"
             printf '%s\n' "${report_dirs[@]}"
-            
+        
             if [ "${#report_dirs[@]}" -eq 0 ]; then
               echo "❌ No valid reports found to merge."
               exit 1
             fi
         
             npx playwright merge-reports --reporter html "${report_dirs[@]}"
-            mv playwright-report ../merged-report/
-        working-directory: playwright_automation
+            mv playwright-report merged-report/
+        
         
         
   
