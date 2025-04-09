@@ -137,7 +137,13 @@ jobs:
       #     mkdir merged-report
       #     npx playwright merge-reports --reporter html ./all-reports/**/
       #     mv playwright-report merged-report/
-
+      - name: Debug artifact structure
+        run: |
+          echo "Directory tree of all-reports:"
+          find all-reports
+          echo "--- Directory-report"
+          ls -la 
+          
       - name: Merge reports into HTML
         run: |
             mkdir merged-report
