@@ -43,6 +43,9 @@ jobs:
           echo "Checking contents of workspace..."
           ls -la test-results
           echo "---"
+          ls -la playwright_automation
+          echo "---"
+          echo "---"
           ls -la my-report || echo "my-report directory not found"  
 
       - name: Upload HTML report for ${{ matrix.name }}
