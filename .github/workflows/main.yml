@@ -147,14 +147,20 @@ jobs:
       - name: Debug extracted structure
         run: find extracted-reports
              
-
+      - name: Debug contents of report.jsonl files
+        run: |
+          echo "🧾 report.jsonl contents:"
+          find extracted-reports -name report.jsonl -exec echo {} \; -exec cat {} \;
+      
       - name: Merge reports into HTML
         run: |
-          mkdir merged-report
-          # Grab folders containing report.jsonl
+          mkdir -p merged-report
+      
+          # Find folders containing report.jsonl
+          echo "🔍 Searching for valid report folders..."
           mapfile -t report_dirs < <(find extracted-reports -type f -name "report.jsonl" -exec dirname {} \;)
       
-          echo "Merging reports from:"
+          echo "📂 Merging reports from:"
           printf '%s\n' "${report_dirs[@]}"
       
           if [ "${#report_dirs[@]}" -eq 0 ]; then
@@ -164,7 +170,10 @@ jobs:
       
           # Merge them
           npx playwright merge-reports --reporter html "${report_dirs[@]}"
+      
+          # Move final HTML report into a folder
           mv playwright-report merged-report
+      
 
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
