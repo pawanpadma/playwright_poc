@@ -58,9 +58,9 @@ jobs:
         run: |
           echo "Checking contents of workspace..."
           ls -la 
-          echo "--- blob-report"
-          ls -la blob-report
-          echo "--- blob-report"
+          # echo "--- blob-report"
+          # ls -la blob-report
+          # echo "--- blob-report"
          
           ls -la blob-report || echo "test-results directory not found"  
 
