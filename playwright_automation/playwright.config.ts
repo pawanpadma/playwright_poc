@@ -2,13 +2,23 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 90 * 1000,
-  fullyParallel: true,
+  timeout: 20 * 1000,
+  workers:2,
+  
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+ 
+  //workers: process.env.CI ? 1 : undefined,
+  reporter: [["list"], 
+  ["html", {outputFolder:'my-report',open:'never'}],
+  ['json', {outputFile: 'my-report/json-report.json' }],
+  ['monocart-reporter', {
+    name: "My Test Report",
+    outputFile: './monocart-report/index.html',
+    includeAnnotations: true, // Include annotations in the report
+  }]
   
- reporter: [['html', { open: 'never' }]],
+],
 
 
   use: {
@@ -23,24 +33,29 @@ export default defineConfig({
 
   projects: [
     {
-      name: 'chromium',
-      use: { 
-        channel: 'chrome', // Use Chrome for Testing
-        headless: true    // Modern headless mode
+      name: 'chrome',
+      use: {
+        browserName: 'chromium',
+        // Browser-specific options
+        channel: 'chrome',
+        headless:false
       },
     },
-
     /*
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    },
+    }, */
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
+    // {
+    //   name: 'firefox',
+    //   use: {
+    //     browserName: 'firefox',
+    //     headless:false
+    //   },
+    // },
 
+   /*
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
@@ -62,4 +77,6 @@ export default defineConfig({
     },
     */
   ],
+  fullyParallel:true
+  
 });
