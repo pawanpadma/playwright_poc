@@ -12,11 +12,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - testFile: tests/test1.spec.ts
+          - testFile: tests/example.spec.ts
             name: Test1
-          - testFile: tests/test2.spec.ts
+          - testFile: tests/home.spec.ts
             name: Test2
-          - testFile: tests/test3.spec.ts
+          - testFile: tests/login.spec.ts
             name: Test3
     steps:
       - name: Checkout code
