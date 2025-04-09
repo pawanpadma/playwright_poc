@@ -39,7 +39,7 @@ jobs:
           echo "Running file: ${{ matrix.testFile }}"  
 
       - name: Run test file
-        run: npx playwright test ${{ matrix.testFile }} --reporter=list,html,json,blob
+        run: npx playwright test ${{ matrix.testFile }} --reporter=blob,list,html,json
         continue-on-error: true
 
       - name: List workspace contents
@@ -76,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: report-${{ matrix.name }}
-          path: blob-report/
+          path: .blob-report
 
   # merge-reports:
   #   name: Merge All Reports
@@ -172,7 +172,9 @@ jobs:
         run: |
             mkdir merged-report
             #mapfile -t report_dirs < <(find extracted-reports -type f -name "report.jsonl" -exec dirname {} \;)
+            #mapfile -t report_dirs < <(find extracted-reports -type f -name "report.jsonl" -path "*/.blob-report/*" -exec dirname {} \;)
             mapfile -t report_dirs < <(find extracted-reports -type f -name "report.jsonl" -path "*/.blob-report/*" -exec dirname {} \;)
+
             echo "Merging reports from:"
             printf '%s\n' "${report_dirs[@]}"
             if [ "${#report_dirs[@]}" -eq 0 ]; then
