@@ -12,14 +12,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: Login Test
-            file: tests/login.spec.ts
-
-          - name: Dashboard Test
-            file: tests/dashboard.spec.ts
-
-          - name: Profile Test
-            file: tests/profile.spec.ts
+        - testFile: playwright_automation/tests/example.spec.ts
+          name: Test1
+        - testFile: playwright_automation/tests/home.spec.ts
+          name: Test2
+        - testFile: playwright_automation/tests/login.spec.ts
+          name: Test3
 
     steps:
       - name: Checkout code
