@@ -55,8 +55,8 @@ jobs:
         run: |
           echo "Checking contents of workspace..."
           ls -la 
-          echo "--- playwright-report"
-          ls -la playwright-report
+          echo "--- test-results"
+          ls -la test-results
           echo "--- test-results"
          
           ls -la test-results || echo "test-results directory not found"  
