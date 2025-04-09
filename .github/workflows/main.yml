@@ -138,7 +138,12 @@ jobs:
             ls -la
       
       - name: Install dependencies
-        run: npm install  
+        run: npm install
+        working-directory: playwright_automation
+          
+      - name: Install Playwright CLI (if needed)
+        run: npm install --no-save playwright
+        working-directory: playwright_automation
 
       - name: Download all blob reports
         uses: actions/download-artifact@v4
@@ -170,21 +175,19 @@ jobs:
             fi
           done
   
-      - name: Merge reports into HTML
+      - name: Merge reports
         run: |
-          mkdir merged-report
-          mapfile -t report_dirs < <(find extracted-reports -type d -name ".report")
-  
-          echo "Merging reports from:"
-          printf '%s\n' "${report_dirs[@]}"
-  
-          if [ "${#report_dirs[@]}" -eq 0 ]; then
-            echo "❌ No valid reports found to merge."
-            exit 1
-          fi
-  
-          npx playwright merge-reports --reporter html "${report_dirs[@]}"
-          mv playwright-report merged-report
+            mkdir ../merged-report
+            mapfile -t report_dirs < <(find ../extracted-reports -type f -name "report.jsonl" -exec dirname {} \;)
+            echo "Merging reports from:"
+            printf '%s\n' "${report_dirs[@]}"
+            if [ "${#report_dirs[@]}" -eq 0 ]; then
+              echo "❌ No valid reports found to merge."
+              exit 1
+            fi
+            npx playwright merge-reports --reporter html "${report_dirs[@]}"
+            mv playwright-report ../merged-report/
+        working-directory: playwright_automation
   
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
