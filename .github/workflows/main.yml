@@ -61,43 +61,72 @@ jobs:
          
           ls -la test-results || echo "test-results directory not found"  
 
-      - name: Upload HTML report for ${{ matrix.name }}
+      # - name: Upload HTML report for ${{ matrix.name }}
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: report-${{ matrix.name }}
+      #     path: playwright-report
+      #     retention-days: 5
+
+      - name: Upload raw report for ${{ matrix.name }}
         uses: actions/upload-artifact@v4
         with:
           name: report-${{ matrix.name }}
-          path: playwright-report
-          retention-days: 5
+          path: blob-report/
+
+  # merge-reports:
+  #   name: Merge All Reports
+  #   runs-on: ubuntu-latest
+  #   needs: test
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Download all reports
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: all-reports
+
+  #     # - name: Install dependencies
+  #     #   run: npm ci
+
+  #     - name: Install Playwright Browsers
+  #       run: npx playwright install --with-deps
+
+  #     - name: List merge directory
+  #       run: |
+  #         echo "Checking contents of workspace..."
+  #         ls -la 
+  #         # echo "--- playwright-report"
+  #         # ls -la playwright-report
+  #         # echo "--- test-results"
+         
+  #         # ls -la test-results || echo "test-results directory not found"  
+
+  #     - name: Merge reports
+  #       run: |
+  #         mkdir merged-report
+  #         npx playwright merge-reports --reporter html ./all-reports/**/
+  #         mv playwright-report merged-report/
+
+  #     - name: Upload merged HTML report
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: merged-html-report
+  #         path: merged-report/
 
   merge-reports:
-    name: Merge All Reports
-    runs-on: ubuntu-latest
     needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    runs-on: ubuntu-latest
+    name: Merge Reports
 
-      - name: Download all reports
+    steps:
+      - name: Download all blob reports
         uses: actions/download-artifact@v4
         with:
           path: all-reports
 
-      # - name: Install dependencies
-      #   run: npm ci
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: List merge directory
-        run: |
-          echo "Checking contents of workspace..."
-          ls -la 
-          # echo "--- playwright-report"
-          # ls -la playwright-report
-          # echo "--- test-results"
-         
-          # ls -la test-results || echo "test-results directory not found"  
-
-      - name: Merge reports
+      - name: Merge reports into HTML
         run: |
           mkdir merged-report
           npx playwright merge-reports --reporter html ./all-reports/**/
