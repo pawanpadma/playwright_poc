@@ -8,7 +8,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.47.1",
+    "@playwright/test": "^1.51.1",
     "@types/node": "^22.3.0",
     "monocart-reporter": "^2.8.0"
   },
