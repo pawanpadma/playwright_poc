@@ -166,14 +166,7 @@ jobs:
       - name: Debug extracted structure
         run: find extracted-reports
              
-      - name: Prepare .report folders for merge
-        run: |
-          for dir in extracted-reports/*; do
-            if [ -f "$dir/report.jsonl" ]; then
-              mkdir -p "$dir/.report"
-              mv "$dir/report.jsonl" "$dir/.report/"
-            fi
-          done
+  
   
       - name: Merge reports
         run: |
