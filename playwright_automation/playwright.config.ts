@@ -8,16 +8,22 @@ export default defineConfig({
 
  
   //workers: process.env.CI ? 1 : undefined,
-  reporter: [["list"], 
-  ["html", {outputFolder:'my-report',open:'never'}],
-  ['json', {outputFile: 'my-report/json-report.json' }],
+  // reporter: [["list"], 
+  // ["html", {outputFolder:'my-report',open:'never'}],
+  // ['json', {outputFile: 'my-report/json-report.json' }],
+  reporter: [
+    ['list'],
+    ['html', { outputFolder: 'my-report', open: 'never' }],
+    ['json', { outputFile: 'my-report/json-report.json' }],
+    ['blob']  // ✅ Needed for merge-reports
+  ],
   // ['monocart-reporter', {
   //   name: "My Test Report",
   //   outputFile: './monocart-report/index.html',
   //   includeAnnotations: true, // Include annotations in the report
   // }]
   
-],
+
 
 
   use: {
