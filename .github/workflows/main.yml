@@ -39,7 +39,7 @@ jobs:
           echo "Running file: ${{ matrix.testFile }}"  
 
       - name: Run test file
-        run: npx playwright test ${{ matrix.testFile }} --reporter=blob,list,html,json
+        run: npx playwright test ${{ matrix.testFile }} --reporter=blob
         continue-on-error: true
 
       - name: List workspace contents
@@ -76,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: report-${{ matrix.name }}
-          path: .blob-report
+          path: playwright_automation/.blob-report
 
   # merge-reports:
   #   name: Merge All Reports
