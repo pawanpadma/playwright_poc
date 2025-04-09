@@ -27,11 +27,11 @@ jobs:
         with:
           node-version: '20'
         
-      - name: change directry
-        run: find  -name "package.json"
+      # - name: change directry
+      #   run: cd playwright_poc/playwright_automation
 
       - name: Install dependencies
-        run: npm install playwright_poc/playwright_automation
+        run: npm install ./playwright_automation
 
       - name: Run Playwright Test
         run: |
