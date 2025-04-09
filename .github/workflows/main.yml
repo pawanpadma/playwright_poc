@@ -40,6 +40,9 @@ jobs:
 
       - name: Run test file
         run: npx playwright test ${{ matrix.testFile }} --reporter=blob
+          echo "✅ Test run finished. Inspecting .blob-report contents..."
+          find .blob-report
+        working-directory: playwright_automation
         continue-on-error: true
 
       - name: List workspace contents
