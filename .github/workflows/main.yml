@@ -39,47 +39,23 @@ jobs:
           echo "Running file: ${{ matrix.testFile }}"  
 
       - name: Run test file
-        run: xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=blob
-          echo "✅ Test run finished. Inspecting .blob-report contents..."
-          find .blob-report
+        run: xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html
         working-directory: playwright_automation
         continue-on-error: true
 
-      - name: List workspace contents
+      - name: Rename and zip HTML report
         run: |
-         echo "Current directory:"
-         pwd
-         echo "--- Top-level files/folders ---"
-         ls -la
-         echo "--- .report folder (if it exists) ---"
-         ls -R .report || echo ".report folder not found"
+          REPORT_DIR="report-${{ matrix.name }}"
+          mv playwright_automation/playwright-report "$REPORT_DIR"
+          zip -r "$REPORT_DIR.zip" "$REPORT_DIR" 
 
-      - name: List report directory
-        run: |
-          echo "Checking contents of workspace..."
-          ls -la 
-          # echo "--- blob-report"
-          # ls -la blob-report
-          # echo "--- blob-report"
-         
-          ls -la blob-report || echo "test-results directory not found"  
 
-      # - name: Upload HTML report for ${{ matrix.name }}
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: report-${{ matrix.name }}
-      #     path: playwright-report
-      #     retention-days: 5
-      - name: Debug blob-report contents
-        run: |
-          echo "Blob report contents:"
-          ls -R blob-report || echo "blob-report missing!"
 
-      - name: Upload raw report for ${{ matrix.name }}
+      - name: Upload zipped report
         uses: actions/upload-artifact@v4
         with:
-          name: report-${{ matrix.name }}
-          path: blob-report
+            name: report-${{ matrix.name }}
+            path: report-${{ matrix.name }}.zip
 
   # merge-reports:
   #   name: Merge All Reports
@@ -148,52 +124,30 @@ jobs:
         run: npm install --no-save playwright
         working-directory: playwright_automation
 
-      - name: Download all blob reports
+      - name: Download all reports
         uses: actions/download-artifact@v4
         with:
           path: all-reports
-          merge-multiple: true # ZIPs will be saved here, one per matrix
-
-      - name: Debug structure (before unzip)
+          merge-multiple: true
+      
+      - name: List downloaded reports
         run: find all-reports
-
-      - name: Extract all report ZIPs
+      
+      - name: Generate report index
         run: |
-          mkdir -p extracted-reports
+          mkdir merged-report
+          echo "<html><body><h1>Test Report Index</h1><ul>" > merged-report/index.html
           for zip in all-reports/*.zip; do
-            foldername=$(basename "$zip" .zip)
-            mkdir -p "extracted-reports/$foldername/.blob-report"
-            unzip -q "$zip" -d "extracted-reports/$foldername/.blob-report"
+            name=$(basename "$zip" .zip)
+            unzip -q "$zip" -d "merged-report/$name"
+            echo "<li><a href='$name/index.html'>$name</a></li>" >> merged-report/index.html
           done
-
-      - name: Debug extracted structure
-        run: find extracted-reports
-             
-  
-  
-      - name: Merge reports
-        run: |
-            mkdir merged-report
-            #mapfile -t report_dirs < <(find extracted-reports -type f -name "report.jsonl" -exec dirname {} \;)
-            #mapfile -t report_dirs < <(find extracted-reports -type f -name "report.jsonl" -path "*/.blob-report/*" -exec dirname {} \;)
-            mapfile -t report_dirs < <(find extracted-reports -type f -name "report.jsonl" -path "*/.blob-report/*" -exec dirname {} \;)
-
-            echo "Merging reports from:"
-            printf '%s\n' "${report_dirs[@]}"
-            if [ "${#report_dirs[@]}" -eq 0 ]; then
-              echo "❌ No valid reports found to merge."
-              exit 1
-            fi
-            npx playwright merge-reports --reporter html "${report_dirs[@]}"
-            mv playwright-report merged-report/
-    
-        
-        
-        
-  
-      - name: Upload merged HTML report
+          echo "</ul></body></html>" >> merged-report/index.html
+      
+      - name: Upload merged index report
         uses: actions/upload-artifact@v4
         with:
           name: merged-html-report
           path: merged-report
+      
 
