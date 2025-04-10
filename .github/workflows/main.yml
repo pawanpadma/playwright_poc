@@ -139,7 +139,10 @@ jobs:
           echo "<html><body><h1>Test Report Index</h1><ul>" > merged-report/index.html
           for zip in all-reports/*.zip; do
             name=$(basename "$zip" .zip)
-            unzip -q "$zip" -d "merged-report/$name"
+            mkdir -p "merged-report/$name"
+            unzip -q "$zip" -d "merged-report/tmp"
+            mv "merged-report/tmp/$name"/* "merged-report/$name"
+            rm -rf "merged-report/tmp"
             echo "<li><a href='$name/index.html'>$name</a></li>" >> merged-report/index.html
           done
           echo "</ul></body></html>" >> merged-report/index.html
