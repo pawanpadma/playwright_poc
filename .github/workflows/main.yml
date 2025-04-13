@@ -39,8 +39,9 @@ jobs:
           echo "Running file: ${{ matrix.testFile }}"  
 
       - name: Run tests and set status
+        shell: bash
         run: |
-            set +e  # ← this is the key
+            set +e  # 🔑 disable automatic exit on failure
             xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html --output=playwright_automation/test-results
             STATUS=$?
             echo "Playwright exited with code $STATUS"
@@ -49,8 +50,6 @@ jobs:
             else
               echo "passed" > playwright_automation/status.txt
             fi
-          shell: bash
-        continue-on-error: true
 
       - name: Zip report with status
         run: |
