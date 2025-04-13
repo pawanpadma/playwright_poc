@@ -54,7 +54,7 @@ jobs:
       - name: Zip HTML report and status
         run: |
               REPORT_DIR="report-${{ matrix.name }}"
-              mv playwright_automation/my-report "$REPORT_DIR"
+              mv my-report "$REPORT_DIR"
               mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
               zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
 
