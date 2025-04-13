@@ -34,19 +34,21 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Debug test file path
+      - name: Run test file and capture status
         run: |
-          echo "Running file: ${{ matrix.testFile }}"  
-
-          run: |
           xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html
           STATUS=$?
           echo "Playwright exited with code $STATUS"
+      
+          REPORT_DIR="playwright_automation"
+          mkdir -p "$REPORT_DIR"
+      
           if [ "$STATUS" -eq 0 ]; then
-            echo "passed" > playwright_automation/status.txt
+            echo "passed" > "$REPORT_DIR/status.txt"
           else
-            echo "failed" > playwright_automation/status.txt
+            echo "failed" > "$REPORT_DIR/status.txt"
           fi
+      
           exit $STATUS
         working-directory: playwright_automation
         continue-on-error: true
