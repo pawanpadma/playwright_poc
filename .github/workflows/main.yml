@@ -38,8 +38,16 @@ jobs:
         run: |
           echo "Running file: ${{ matrix.testFile }}"  
 
-      - name: Run test file
-        run: xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html
+          run: |
+          xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html
+          STATUS=$?
+          echo "Playwright exited with code $STATUS"
+          if [ "$STATUS" -eq 0 ]; then
+            echo "passed" > playwright_automation/status.txt
+          else
+            echo "failed" > playwright_automation/status.txt
+          fi
+          exit $STATUS
         working-directory: playwright_automation
         continue-on-error: true
 
@@ -47,6 +55,7 @@ jobs:
         run: |
           REPORT_DIR="report-${{ matrix.name }}"
           mv playwright_automation/playwright-report "$REPORT_DIR"
+          mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
           zip -r "$REPORT_DIR.zip" "$REPORT_DIR" 
 
 
@@ -137,14 +146,25 @@ jobs:
         run: |
           mkdir merged-report
           echo "<html><body><h1>Test Report Index</h1><ul>" > merged-report/index.html
+
           for zip in all-reports/*.zip; do
             name=$(basename "$zip" .zip)
             mkdir -p "merged-report/$name"
             unzip -q "$zip" -d "merged-report/tmp"
             mv "merged-report/tmp/$name"/* "merged-report/$name"
             rm -rf "merged-report/tmp"
-            echo "<li><a href='$name/index.html'>$name</a></li>" >> merged-report/index.html
+
+            status="❓"
+            if [[ -f "merged-report/$name/status.txt" ]]; then
+              case $(<"merged-report/$name/status.txt") in
+                passed) status="✅ Passed" ;;
+                failed) status="❌ Failed" ;;
+              esac
+            fi
+
+            echo "<li><a href='$name/index.html'>$name</a> - $status</li>" >> merged-report/index.html
           done
+
           echo "</ul></body></html>" >> merged-report/index.html
       
       - name: Upload merged index report
