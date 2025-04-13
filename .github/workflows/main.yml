@@ -49,7 +49,7 @@ jobs:
               echo "passed" > playwright_automation/status.txt
             fi
         shell: bash
-        working-directory: playwright_automation
+        # working-directory: playwright_automation
         continue-on-error: true
 
       - name: Rename and zip HTML report
