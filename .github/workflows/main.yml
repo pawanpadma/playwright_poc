@@ -36,6 +36,7 @@ jobs:
 
       - name: Run test file and capture status
         run: |
+          set +e
           xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html
           STATUS=$?
           echo "Playwright exited with code $STATUS"
