@@ -40,6 +40,7 @@ jobs:
 
       - name: Run tests and set status
         run: |
+            set +e  # ← this is the key
             xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html --output=playwright_automation/test-results
             STATUS=$?
             echo "Playwright exited with code $STATUS"
@@ -48,7 +49,7 @@ jobs:
             else
               echo "passed" > playwright_automation/status.txt
             fi
-        shell: bash
+          shell: bash
         continue-on-error: true
 
       - name: Zip report with status
