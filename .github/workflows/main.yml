@@ -40,13 +40,10 @@ jobs:
           STATUS=$?
           echo "Playwright exited with code $STATUS"
       
-          REPORT_DIR="playwright_automation"
-          mkdir -p "$REPORT_DIR"
-      
           if [ "$STATUS" -eq 0 ]; then
-            echo "passed" > "$REPORT_DIR/status.txt"
+            echo "passed" > status.txt
           else
-            echo "failed" > "$REPORT_DIR/status.txt"
+            echo "failed" > status.txt
           fi
       
           exit $STATUS
