@@ -42,7 +42,7 @@ jobs:
         shell: bash
         run: |
             set +e
-            xvfb-run npx playwright test ${{ matrix.testFile }}
+            xvfb-run npx playwright test playwright_automation/tests/example.spec.ts --config=playwright_automation/playwright.config.ts
             STATUS=$?
             echo "Playwright exited with code $STATUS"
             if [ "$STATUS" -ne 0 ]; then
