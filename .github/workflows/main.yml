@@ -56,7 +56,7 @@ jobs:
           # mv playwright_automation/playwright-report "$REPORT_DIR"
           # zip -r "$REPORT_DIR.zip" "$REPORT_DIR" 
 
-          EPORT_DIR="report-${{ matrix.name }}"
+          REPORT_DIR="report-${{ matrix.name }}"
           mv playwright_automation/playwright-report "$REPORT_DIR"
           mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
           zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
