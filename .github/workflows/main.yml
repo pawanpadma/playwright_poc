@@ -38,11 +38,11 @@ jobs:
         run: |
           echo "Running file: ${{ matrix.testFile }}"  
 
-      - name: Run tests and set status
+      - name: Run Playwright test and set status
         shell: bash
         run: |
-            set +e  # 🔑 disable automatic exit on failure
-            xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html --output=playwright_automation/test-results
+            set +e
+            xvfb-run npx playwright test ${{ matrix.testFile }}
             STATUS=$?
             echo "Playwright exited with code $STATUS"
             if [ "$STATUS" -ne 0 ]; then
@@ -51,12 +51,12 @@ jobs:
               echo "passed" > playwright_automation/status.txt
             fi
 
-      - name: Zip report with status
+      - name: Zip HTML report and status
         run: |
-          REPORT_DIR="report-${{ matrix.name }}"
-          mv playwright_automation/test-results "$REPORT_DIR"
-          mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
-          zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
+              REPORT_DIR="report-${{ matrix.name }}"
+              mv playwright_automation/my-report "$REPORT_DIR"
+              mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
+              zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
 
       - name: Upload zipped report
         uses: actions/upload-artifact@v4
