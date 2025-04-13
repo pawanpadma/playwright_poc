@@ -40,7 +40,7 @@ jobs:
 
       - name: Run tests and set status
         run: |
-            xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html
+            xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html --output=playwright_automation/test-results
             STATUS=$?
             echo "Playwright exited with code $STATUS"
             if [ "$STATUS" -ne 0 ]; then
@@ -49,17 +49,12 @@ jobs:
               echo "passed" > playwright_automation/status.txt
             fi
         shell: bash
-        # working-directory: playwright_automation
         continue-on-error: true
 
-      - name: Rename and zip HTML report
+      - name: Zip report with status
         run: |
-          # REPORT_DIR="report-${{ matrix.name }}"
-          # mv playwright_automation/playwright-report "$REPORT_DIR"
-          # zip -r "$REPORT_DIR.zip" "$REPORT_DIR" 
-
           REPORT_DIR="report-${{ matrix.name }}"
-          mv playwright_automation/playwright-report "$REPORT_DIR"
+          mv playwright_automation/test-results "$REPORT_DIR"
           mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
           zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
 
