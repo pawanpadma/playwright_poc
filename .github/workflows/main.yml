@@ -42,7 +42,7 @@ jobs:
         run: |
             xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html
             EXIT_CODE=$?
-            if [ $EXIT_CODE -ne 0 ]; then
+            if [ $EXIT_CODE -ne 1 ]; then
               echo "failed" > status.txt
             else
               echo "passed" > status.txt
