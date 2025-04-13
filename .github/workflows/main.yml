@@ -38,10 +38,15 @@ jobs:
         run: |
           echo "Running file: ${{ matrix.testFile }}"  
 
-      - name: Run test file
+      - name: Run tests and set status
         run: |
-          xvfb-run npx playwright test playwright_automation/tests/home.spec.ts --reporter=html || echo "failed" > status.txt
-          if [ ! -f status.txt ]; then echo "passed" > status.txt; fi
+            xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -ne 0 ]; then
+              echo "failed" > status.txt
+            else
+              echo "passed" > status.txt
+            fi
         working-directory: playwright_automation
         continue-on-error: true
 
@@ -51,9 +56,9 @@ jobs:
           # mv playwright_automation/playwright-report "$REPORT_DIR"
           # zip -r "$REPORT_DIR.zip" "$REPORT_DIR" 
 
-          REPORT_DIR="report-${{ matrix.name }}"
+          EPORT_DIR="report-${{ matrix.name }}"
           mv playwright_automation/playwright-report "$REPORT_DIR"
-          mv status.txt "$REPORT_DIR/status.txt"
+          mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
           zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
 
       - name: Upload zipped report
