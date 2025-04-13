@@ -40,7 +40,7 @@ jobs:
 
       - name: Run test file
         run: xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html || echo "failed" > status.txt if [ ! -f status.txt ]; 
-             then echo "passed" > status.txt; fi
+             then echo "passed" > status.txt;
         working-directory: playwright_automation
         continue-on-error: true
 
