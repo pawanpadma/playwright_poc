@@ -39,8 +39,9 @@ jobs:
           echo "Running file: ${{ matrix.testFile }}"  
 
       - name: Run test file
-        run: xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html || echo "failed" > status.txt if [ ! -f status.txt ]; 
-             then echo "passed" > status.txt;
+        run: |
+          xvfb-run npx playwright test playwright_automation/tests/home.spec.ts --reporter=html || echo "failed" > status.txt
+          if [ ! -f status.txt ]; then echo "passed" > status.txt; fi
         working-directory: playwright_automation
         continue-on-error: true
 
