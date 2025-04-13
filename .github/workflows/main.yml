@@ -117,29 +117,29 @@ jobs:
 
       - name: Generate merged HTML report index with status
         run: |
-            echo "<html><body><h1>Test Report Index</h1><ul>" > merged-report/index.html
+          mkdir -p merged-report
+          echo "<html><body><h1>Test Report Index</h1><ul>" > merged-report/index.html
 
-            for zip in all-reports/*.zip; do
-            name=$(basename "$zip" .zip)
+          for zip in all-reports/*.zip; do
+          name=$(basename "$zip" .zip)
 
-            mkdir -p "merged-report/$name"
-            unzip -q "$zip" -d "merged-report/$name"
+          mkdir -p "merged-report/$name"
+          unzip -q "$zip" -d "merged-report/$name"
 
-            status="❓"
-
-     
-            if [[ -f "merged-report/$name/status.txt" ]]; then
-              if grep -qi "passed" "merged-report/$name/status.txt"; then
-                status="✅"
-              elif grep -qi "failed" "merged-report/$name/status.txt"; then
-                status="❌"
-              fi
+          status="❓"
+          if [[ -f "merged-report/$name/status.txt" ]]; then
+            if grep -qi "passed" "merged-report/$name/status.txt"; then
+            status="✅"
+          elif grep -qi "failed" "merged-report/$name/status.txt"; then
+            status="❌"
             fi
+          fi
 
             echo "<li><a href='$name/index.html'>$name $status</a></li>" >> merged-report/index.html
-            done
+          done
 
-            echo "</ul></body></html>" >> merged-report/index.html
+          echo "</ul></body></html>" >> merged-report/index.html
+
       
       - name: Upload merged index report
         uses: actions/upload-artifact@v4
