@@ -56,11 +56,32 @@ jobs:
           REPORT_DIR="report-${{ matrix.name }}"
           mv playwright_automation/playwright-report "$REPORT_DIR"
           mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
-          # Also move JSON result
-          mv "$REPORT_DIR"/data/report.json "$REPORT_DIR/results.json"
+          
+          # Copy the JSON report generated at root of playwright_automation/
+          if [ -f playwright_automation/report.json ]; then
+            mv playwright_automation/report.json "$REPORT_DIR/results.json"
+          else
+            echo "⚠️ JSON report not found!"
+          fi
+      
           zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
 
 
+      - name: Run test file and capture status
+        run: |
+            set +e
+            xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=json=report.json,html
+            STATUS=$?
+            echo "Playwright exited with code $STATUS"
+        
+            if [ "$STATUS" -eq 0 ]; then
+              echo "passed" > status.txt
+            else
+              echo "failed" > status.txt
+            fi
+        
+            exit $STATUS
+        working-directory: playwright_automation
 
       - name: Upload zipped report
         uses: actions/upload-artifact@v4
