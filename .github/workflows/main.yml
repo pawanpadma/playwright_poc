@@ -37,7 +37,7 @@ jobs:
       - name: Run test file and capture status
         run: |
           set +e
-          xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=html
+          xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=json,html
           STATUS=$?
           echo "Playwright exited with code $STATUS"
       
@@ -56,7 +56,9 @@ jobs:
           REPORT_DIR="report-${{ matrix.name }}"
           mv playwright_automation/playwright-report "$REPORT_DIR"
           mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
-          zip -r "$REPORT_DIR.zip" "$REPORT_DIR" 
+          # Also move JSON result
+          mv "$REPORT_DIR"/data/report.json "$REPORT_DIR/results.json"
+          zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
 
 
 
@@ -66,46 +68,7 @@ jobs:
             name: report-${{ matrix.name }}
             path: report-${{ matrix.name }}.zip
 
-  # merge-reports:
-  #   name: Merge All Reports
-  #   runs-on: ubuntu-latest
-  #   needs: test
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Download all reports
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         path: all-reports
-
-  #     # - name: Install dependencies
-  #     #   run: npm ci
-
-  #     - name: Install Playwright Browsers
-  #       run: npx playwright install --with-deps
-
-  #     - name: List merge directory
-  #       run: |
-  #         echo "Checking contents of workspace..."
-  #         ls -la 
-  #         # echo "--- playwright-report"
-  #         # ls -la playwright-report
-  #         # echo "--- test-results"
-         
-  #         # ls -la test-results || echo "test-results directory not found"  
-
-  #     - name: Merge reports
-  #       run: |
-  #         mkdir merged-report
-  #         npx playwright merge-reports --reporter html ./all-reports/**/
-  #         mv playwright-report merged-report/
-
-  #     - name: Upload merged HTML report
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: merged-html-report
-  #         path: merged-report/
+  
 
   merge-reports:
       runs-on: ubuntu-latest
@@ -133,44 +96,22 @@ jobs:
         run: npm install --no-save playwright
         working-directory: playwright_automation
 
-      - name: Download all reports
-        uses: actions/download-artifact@v4
-        with:
-          path: all-reports
-          merge-multiple: true
-      
-      - name: List downloaded reports
-        run: find all-reports
-      
-      - name: Generate report index
+      - name: Merge JSON reports into HTML
         run: |
           mkdir merged-report
-          echo "<html><body><h1>Test Report Index</h1><ul>" > merged-report/index.html
-
-          for zip in all-reports/*.zip; do
-            name=$(basename "$zip" .zip)
-            mkdir -p "merged-report/$name"
-            unzip -q "$zip" -d "merged-report/tmp"
-            mv "merged-report/tmp/$name"/* "merged-report/$name"
-            rm -rf "merged-report/tmp"
-
-            status="❓"
-            if [[ -f "merged-report/$name/status.txt" ]]; then
-              case $(<"merged-report/$name/status.txt") in
-                passed) status="✅ Passed" ;;
-                failed) status="❌ Failed" ;;
-              esac
-            fi
-
-            echo "<li><a href='$name/index.html'>$name</a> - $status</li>" >> merged-report/index.html
-          done
-
-          echo "</ul></body></html>" >> merged-report/index.html
+          # Extract JSON files from downloaded reports
+          mkdir json-results
+          find all-reports -name 'results.json' -exec cp {} json-results/ \;
+          
+          # Merge and generate a single HTML report
+          npx playwright merge-reports --reporter html json-results/
+          
+          mv playwright-report merged-report/
       
-      - name: Upload merged index report
+      - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
         with:
-          name: merged-html-report
-          path: merged-report
+            name: merged-html-report
+            path: merged-report
       
 
