@@ -132,9 +132,12 @@ jobs:
               unzip -q "$zip" -d extracted-reports
             done
         
+            echo "Contents of extracted-reports:"
+            find extracted-reports
+            
             # Collect all JSON reports
             mkdir json-results
-            find extracted-reports -name 'report.json' -exec cp {} json-results/ \;
+            find extracted-reports -type f -name 'report.json' -exec cp {} json-results/ \;
         
             echo "Merged JSONs:"
             ls -l json-results
