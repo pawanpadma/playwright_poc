@@ -101,6 +101,10 @@ jobs:
           path: all-reports
           merge-multiple: true  
 
+      - name: Install Playwright Test CLI (correct package)
+        run: npm install --save-dev @playwright/test
+        working-directory: playwright_automation
+      
       - name: Merge JSONs and generate final HTML report
         run: |
             mkdir merged-report
