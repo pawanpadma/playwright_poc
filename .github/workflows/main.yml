@@ -114,10 +114,10 @@ jobs:
             echo "Contents of extracted-reports:"
             find extracted-reports
         
-            # Collect and rename all JSON reports from nested path
+            # Collect and rename all JSON reports from wherever they are
             mkdir json-results
             i=1
-            find extracted-reports -path '*/playwright_automation/report.json' | while read f; do
+            find extracted-reports -type f -name 'report.json' | while read f; do
               cp "$f" "json-results/report-$i.json"
               i=$((i + 1))
             done
@@ -128,6 +128,7 @@ jobs:
             # Merge into single HTML report
             npx playwright merge-reports --reporter html json-results/
             mv playwright-report merged-report/
+        
         
         
       
