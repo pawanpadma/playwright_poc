@@ -12,10 +12,10 @@ export default defineConfig({
   // ["html", {outputFolder:'my-report',open:'never'}],
   // ['json', {outputFile: 'my-report/json-report.json' }],
   reporter: [
-    ['list'],
-    ['html', { outputFolder: 'my-report', open: 'never' }],
+
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['json', { outputFile: 'report.json' }],
-    ['blob']  // ✅ Needed for merge-reports
+   // ✅ Needed for merge-reports
   ],
   // ['monocart-reporter', {
   //   name: "My Test Report",
