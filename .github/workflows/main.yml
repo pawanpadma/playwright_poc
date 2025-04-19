@@ -122,17 +122,26 @@ jobs:
           path: all-reports
           merge-multiple: true  
 
-      - name: Merge JSON reports into HTML
+      - name: Merge JSONs and generate final HTML report
         run: |
-          mkdir merged-report
-          # Extract JSON files from downloaded reports
-          mkdir json-results
-          find all-reports -name 'results.json' -exec cp {} json-results/ \;
-          
-          # Merge and generate a single HTML report
-          npx playwright merge-reports --reporter html json-results/
-          
-          mv playwright-report merged-report/
+            mkdir merged-report
+        
+            # Extract reports
+            mkdir extracted-reports
+            for zip in all-reports/*.zip; do
+              unzip -q "$zip" -d extracted-reports
+            done
+        
+            # Collect all JSON reports
+            mkdir json-results
+            find extracted-reports -name 'report.json' -exec cp {} json-results/ \;
+        
+            echo "Merged JSONs:"
+            ls -l json-results
+        
+            # Merge into one HTML report
+            npx playwright merge-reports --reporter html json-results/
+            mv playwright-report merged-report/
       
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
