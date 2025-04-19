@@ -14,7 +14,7 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['html', { outputFolder: 'my-report', open: 'never' }],
-    ['json', { outputFile: 'my-report/json-report.json' }],
+    ['json', { outputFile: 'report.json' }],
     ['blob']  // ✅ Needed for merge-reports
   ],
   // ['monocart-reporter', {
