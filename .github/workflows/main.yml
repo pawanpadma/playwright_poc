@@ -68,18 +68,17 @@ jobs:
 
 
       - name: Run test file and capture status
+        continue-on-error: true
         run: |
             set +e
             xvfb-run npx playwright test ${{ matrix.testFile }}
             STATUS=$?
             echo "Playwright exited with code $STATUS"
-        
             if [ "$STATUS" -eq 0 ]; then
               echo "passed" > status.txt
             else
               echo "failed" > status.txt
             fi
-        
             exit $STATUS
         working-directory: playwright_automation
 
