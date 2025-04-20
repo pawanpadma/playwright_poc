@@ -82,6 +82,7 @@ jobs:
      
       - name: Install Playwright
         run: npm install
+        working-directory: playwright_automation
         
 
       - name: Debug where artifacts landed
