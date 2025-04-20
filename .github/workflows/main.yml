@@ -52,11 +52,11 @@ jobs:
           echo "Checking for playwright_automation..."
           ls -la playwright-report  
 
-      - name: Upload JSON report
+      - name: Upload full report folder
         uses: actions/upload-artifact@v4
         with:
-          name: shard-${{ matrix.shard }}-json
-          path: playwright_automation/playwright-report/test-results.json
+            name: shard-${{ matrix.shard }}-report
+            path: playwright_automation/playwright-report/
 
   merge:
     runs-on: ubuntu-latest
@@ -88,7 +88,7 @@ jobs:
       
       - name: Merge reports and generate HTML
         run: |
-          REPORT_DIRS=$(find ../downloaded-reports -type d)
+          REPORT_DIRS=$(find ../downloaded-reports -type d -name test-results)
           echo "Merging from directories: $REPORT_DIRS"
           npx playwright merge-reports --reporter html $REPORT_DIRS
         working-directory: playwright_automation
