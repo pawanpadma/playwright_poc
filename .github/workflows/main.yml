@@ -48,7 +48,7 @@ jobs:
       - name: Debug report path
         run: |
           echo "Checking for report..."
-          ls -la playwright-report  
+          ls -la playwright_automation  
 
       - name: Upload JSON report
         uses: actions/upload-artifact@v4
