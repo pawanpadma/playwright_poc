@@ -84,14 +84,15 @@ jobs:
       - name: Merge test reports
         run: |
           echo "Current directory: $(pwd)"
-          if [ -d "./downloaded-reports" ]; then
-            REPORT_DIRS=$(find ./downloaded-reports -type f -name "test-results.json" -exec dirname {} \;)
+          if [ -d "../downloaded-reports" ]; then
+            REPORT_DIRS=$(find ../downloaded-reports -type f -name "test-results.json" -exec dirname {} \;)
             echo "Merging from directories: $REPORT_DIRS"
             npx playwright merge-reports --reporter html $REPORT_DIRS
           else
             echo "No downloaded-reports directory found. Skipping report merge."
           fi
         working-directory: playwright_automation
+      
 
       - name: Check playwright-report directory
         run: |
