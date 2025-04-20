@@ -88,9 +88,9 @@ jobs:
       
       - name: Merge reports and generate HTML
         run: |
-          REPORT_FILES=$(find ../downloaded-reports -name 'test-results.json')
-          echo "Found reports: $REPORT_FILES"
-          npx playwright merge-reports --reporter html $REPORT_FILES
+          REPORT_DIRS=$(find ../downloaded-reports -type d)
+          echo "Merging from directories: $REPORT_DIRS"
+          npx playwright merge-reports --reporter html $REPORT_DIRS
         working-directory: playwright_automation
        
 
