@@ -84,11 +84,7 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: Debug extracted files
-        run: |
-            find extracted-reports -type f
-            ls -laR extracted-reports
-            
+      
       - name: Prepare reports directory
         run: |
           mkdir -p playwright_automation/json-results
