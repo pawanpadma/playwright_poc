@@ -1,13 +1,15 @@
-name: Playwright Matrix Report Merge
+name: Playwright Matrix Test
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
 
 jobs:
-  run-tests:
-    runs-on: ubuntu-latest
+  test:
     strategy:
       matrix:
         include:
@@ -16,84 +18,58 @@ jobs:
           - testFile: tests/home.spec.ts
             name: Test2
 
-    name: Run ${{ matrix.name }}
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
-        working-directory: playwright_automation
-
-      - name: Install Playwright
-        run: npx playwright install --with-deps
-
-      - name: Run Playwright test
-        run: xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=json
-        working-directory: playwright_automation
-
-      - name: Move JSON report to folder
-        run: |
-          mkdir json-output
-          mv playwright-report/report.json json-output/report.json
-        working-directory: playwright_automation
-
-      - name: Upload JSON report
-        uses: actions/upload-artifact@v4
-        with:
-          name: report-${{ matrix.name }}
-          path: playwright_automation/json-output
-
-  merge-reports:
-    needs: run-tests
     runs-on: ubuntu-latest
-    name: Merge Playwright Reports
+    name: Run ${{ matrix.name }} test
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      # Checkout code
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
+      # Install dependencies
       - name: Install dependencies
         run: npm ci
-        working-directory: playwright_automation
 
-      - name: Install Playwright
-        run: npx playwright install --with-deps
+      # Run tests
+      - name: Run ${{ matrix.name }} test
+        run: npx playwright test ${{ matrix.testFile }} --reporter=blob
+        continue-on-error: true
 
-      - name: Download all report artifacts
-        uses: actions/download-artifact@v4
+      # Upload blob report
+      - name: Upload blob report
+        uses: actions/upload-artifact@v3
         with:
-          path: reports
-          merge-multiple: true
+          name: report-${{ matrix.name }}
+          path: playwright-report
 
-      - name: Organize JSON files into subfolders
+  # Merging reports after all matrix tests have run
+  merge-reports:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout code
+      - uses: actions/checkout@v4
+
+      # Download the reports from matrix jobs
+      - name: Download test reports
+        uses: actions/download-artifact@v3
+        with:
+          name: report-Test1
+          path: reports/Test1
+
+      - name: Download test reports
+        uses: actions/download-artifact@v3
+        with:
+          name: report-Test2
+          path: reports/Test2
+
+      # Merge reports (assuming you have a script for this)
+      - name: Merge reports
         run: |
-          mkdir -p json-results
-          i=1
-          find reports -name "report.json" | while read f; do
-            mkdir -p json-results/run-$i
-            cp "$f" json-results/run-$i/report.json
-            i=$((i+1))
-          done
+          node ./scripts/merge-reports.js
 
-      - name: Merge reports into HTML
-        run: |
-          cd playwright_automation
-          npx playwright merge-reports --reporter html ../json-results
-          mv playwright-report ../merged-report
-
-      - name: Upload merged HTML report
-        uses: actions/upload-artifact@v4
+      # Upload the merged report
+      - name: Upload merged report
+        uses: actions/upload-artifact@v3
         with:
           name: merged-report
-          path: merged-report
+          path: merged-report.html
