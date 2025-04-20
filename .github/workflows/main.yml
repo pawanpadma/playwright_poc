@@ -132,6 +132,8 @@ jobs:
       
           # ✅ Merge from inside playwright_automation to use correct package
           cd playwright_automation
+          echo "full path"
+          ls -la
           npx playwright merge-reports --reporter html ../json-results
           mv playwright-report ../merged-report/
       
