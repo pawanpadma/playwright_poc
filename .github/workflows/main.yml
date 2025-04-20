@@ -110,7 +110,7 @@ jobs:
 
           # Merge and generate report
           cd playwright_automation
-          npx playwright merge-reports --reporter html json-results
+          npx playwright merge-reports --reporter html $(find json-results -mindepth 1 -maxdepth 1 -type d)
           mv playwright-report ../merged-report/
 
 
