@@ -94,12 +94,12 @@ jobs:
         run: npm install
         working-directory: playwright_automation
 
-      - name: Move downloaded-reports to correct location
-        run: |
-          mv ../downloaded-reports ./downloaded-reports
-          echo "Checking contents of downloaded-reports..."
-          ls -la ./downloaded-reports
-          ls -R ./downloaded-reports
+      # - name: Move downloaded-reports to correct location
+      #   run: |
+      #     mv ../downloaded-reports ./downloaded-reports
+      #     echo "Checking contents of downloaded-reports..."
+      #     ls -la ./downloaded-reports
+      #     ls -R ./downloaded-reports
       
       - name: Merge reports and generate HTML
         run: |
