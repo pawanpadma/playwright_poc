@@ -70,6 +70,11 @@ jobs:
         with:
           path: downloaded-reports
 
+      - name:  List files in downloaded-reports
+        run: |
+            echo "Checking contents of downloaded-reports..."
+            ls -la downloaded-reports    
+
       - name: Merge JSON reports
         run: |
           mkdir -p merged
