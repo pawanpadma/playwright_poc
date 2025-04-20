@@ -93,9 +93,10 @@ jobs:
         run: npm install
         working-directory: playwright_automation
 
-      - name: Generate merged HTML report
+      - name: Merge reports and generate HTML
         run: |
-          npx playwright show-report merged/merged-report.json
+          REPORT_FILES=$(find downloaded-reports -name 'test-results.json')
+          npx playwright merge-reports --reporter html $REPORT_FILES
 
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
