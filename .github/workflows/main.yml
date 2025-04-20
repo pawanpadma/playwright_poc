@@ -50,18 +50,23 @@ jobs:
       # Checkout code
       - uses: actions/checkout@v4
 
-      # Download the reports from matrix jobs
+      # Define the list of test names in the matrix
       - name: Download test reports
-        uses: actions/download-artifact@v4
-        with:
-          name: report-Test1
-          path: reports/Test1
-
-      - name: Download test reports
-        uses: actions/download-artifact@v4
-        with:
-          name: report-Test2
-          path: reports/Test2
+        run: |
+          # Define the list of test names
+          TEST_NAMES=("Test1" "Test2")
+          
+          # Loop through the list and download each report
+          for name in "${TEST_NAMES[@]}"; do
+            echo "Downloading report for $name"
+            mkdir -p "reports/$name"
+            # Download the artifact for each test name
+            - name: Download artifact $name
+              uses: actions/download-artifact@v4
+              with:
+                name: "report-$name"
+                path: "reports/$name"
+          done
 
       # Merge reports (assuming you have a script for this)
       - name: Merge reports
