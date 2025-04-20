@@ -42,40 +42,28 @@ jobs:
           name: report-${{ matrix.name }}
           path: playwright-report
 
-  # Merging reports after all matrix tests have run
   merge-reports:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      # Checkout code
-      - uses: actions/checkout@v4
-
-      # Define the list of test names in the matrix
-      - name: Download test reports
-        run: |
-          # Define the list of test names
-          TEST_NAMES=("Test1" "Test2")
-          
-          # Loop through the list and download each report
-          for name in "${TEST_NAMES[@]}"; do
-            echo "Downloading report for $name"
-            mkdir -p "reports/$name"
-            # Download the artifact for each test name
-            - name: Download artifact $name
-              uses: actions/download-artifact@v4
-              with:
-                name: "report-$name"
-                path: "reports/$name"
-          done
-
-      # Merge reports (assuming you have a script for this)
-      - name: Merge reports
-        run: |
-          node ./scripts/merge-reports.js
-
-      # Upload the merged report
-      - name: Upload merged report
-        uses: actions/upload-artifact@v4
-        with:
-          name: merged-report
-          path: merged-report.html
+            needs: test
+            runs-on: ubuntu-latest
+            steps:
+              # Checkout code
+              - uses: actions/checkout@v4
+        
+              # Define the list of test names and download the reports dynamically
+              - name: Download test reports
+                run: |
+                  # Define the list of test names
+                  TEST_NAMES=("Test1" "Test2")
+                  
+                  # Loop through the list and download each report
+                  for name in "${TEST_NAMES[@]}"; do
+                    echo "Downloading report for $name"
+                    mkdir -p "reports/$name"
+                    # Download the artifact for each test name
+                    echo "Downloading artifact report-$name"
+                    actions/download-artifact@v4 \
+                      with:
+                        name: "report-$name" \
+                        path: "reports/$name"
+                  done
+        
