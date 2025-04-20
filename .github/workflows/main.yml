@@ -133,6 +133,9 @@ jobs:
           # 🔍 Debug: Check JSON content
           echo "Checking report contents:"
           cat playwright_automation/json-results/run-1/report.json | head -n 20
+
+          echo "Listing files in json-results:"
+          ls -R playwright_automation/json-results
       
           # ✅ Run from inside playwright_automation
           cd playwright_automation
