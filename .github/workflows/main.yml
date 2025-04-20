@@ -1,100 +1,65 @@
-name: Playwright Sharded Tests
+name: Playwright Test with Sharding and Merged Report
 
 on:
   push:
-    branches: [main]
-  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        shardIndex: [0, 1]  # Adjust based on desired shard count
-    env:
-      SHARD_INDEX: ${{ matrix.shardIndex }}
-      TOTAL_SHARDS: 2
-
+        shard: [1, 2, 3] # Adjust this based on how many shards you want
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
-        working-directory: playwright_automation
+        run: npm ci
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-        working-directory: playwright_automation
-
-      - name: Run sharded tests
+      - name: Run Playwright tests (Shard ${{ matrix.shard }})
         run: |
-          npx playwright test --shard=${SHARD_INDEX}/${TOTAL_SHARDS} --reporter=json,html
-        working-directory: playwright_automation
-        continue-on-error: true
+          xvfb-run npx playwright test --shard=${{ matrix.shard }}/3 --reporter=json
 
-      - name: Archive test results
-        run: |
-          REPORT_DIR="report-shard-${SHARD_INDEX}"
-          mkdir -p "$REPORT_DIR"
-          mv test-results "$REPORT_DIR/test-results"
-          zip -r "${REPORT_DIR}.zip" "$REPORT_DIR"
-        working-directory: playwright_automation
-
-      - name: Upload artifact
+      - name: Upload JSON report
         uses: actions/upload-artifact@v4
         with:
-          name: report-shard-${{ matrix.shardIndex }}
-          path: playwright_automation/report-shard-${{ matrix.shardIndex }}.zip
+          name: shard-${{ matrix.shard }}-json
+          path: playwright-report/test-results.json
 
   merge:
-    needs: test
     runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm install
-        working-directory: playwright_automation
-
-      - name: Install Playwright CLI
-        run: npm install --no-save playwright
-        working-directory: playwright_automation
-
-      - name: Download all shard reports
+      - name: Download JSON reports for all shards
         uses: actions/download-artifact@v4
         with:
-          path: all-reports
-          merge-multiple: true
+          path: downloaded-reports
 
-      - name: Unzip and collect all JSON reports
+      - name: Merge JSON reports
         run: |
-          mkdir -p combined-results
-          for zip in all-reports/*.zip; do
-            unzip -q "$zip" -d tmp
-            cp tmp/**/test-results/*.json combined-results/
-            rm -rf tmp
-          done
+          mkdir -p merged
+          node merge-json-reports.js
 
-      - name: Merge reports and generate HTML
+      - name: Install Playwright
+        run: npm ci
+
+      - name: Generate merged HTML report
         run: |
-          npx playwright merge-reports --reporter html combined-results
-          mv playwright-report merged-report
-        working-directory: playwright_automation
+          npx playwright show-report merged/merged-report.json
 
-      - name: Upload final merged HTML report
+      - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
         with:
           name: merged-html-report
-          path: playwright_automation/merged-report
+          path: playwright-report/
