@@ -98,25 +98,29 @@ jobs:
       - name: Merge reports
         working-directory: playwright_automation
         run: |
-            # Install required tool for JSON merging
-            npm install -g @playwright/test-merger
-        
-            # Create a merged.json file combining all reports
-            find json-results -name 'report.json' -exec echo "Found report: {}" \;
-            find json-results -name 'report.json' -exec cat {} + > combined.json
+            # Create the proper directory structure Playwright expects
+            mkdir -p all-results
             
-            # Verify the combined file
-            echo "Combined file size: $(wc -c < combined.json) bytes"
-            head -n 5 combined.json
+            # Copy each report.json to a numbered subdirectory as test-results.json
+            i=1
+            for report in $(find json-results -name 'report.json'); do
+              dir="all-results/run-$i"
+              mkdir -p "$dir"
+              cp "$report" "$dir/test-results.json"
+              i=$((i+1))
+            done
             
-            # Convert to the format Playwright expects for merging
-            mkdir -p to-merge
-            npx @playwright/test-merger combined.json to-merge/merged.json
+            # Verify the structure (debugging)
+            echo "Generated directory structure:"
+            tree all-results || true
+            echo ""
+            echo "First 3 lines of each test-results.json:"
+            find all-results -name 'test-results.json' -exec sh -c 'echo "--- {} ---"; head -n 3 {}' \;
             
-            # Now merge using Playwright's built-in tool
-            npx playwright merge-reports --reporter html to-merge
+            # Merge reports using Playwright's built-in tool
+            npx playwright merge-reports --reporter html all-results
             
-            # Prepare final report
+            # Prepare final report directory
             mkdir -p ../merged-report
             mv playwright-report ../merged-report/
 
