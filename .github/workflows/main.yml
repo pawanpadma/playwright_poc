@@ -36,7 +36,7 @@ jobs:
 
       # Upload blob report
       - name: Upload blob report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: report-${{ matrix.name }}
           path: playwright-report
@@ -51,13 +51,13 @@ jobs:
 
       # Download the reports from matrix jobs
       - name: Download test reports
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: report-Test1
           path: reports/Test1
 
       - name: Download test reports
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: report-Test2
           path: reports/Test2
@@ -69,7 +69,7 @@ jobs:
 
       # Upload the merged report
       - name: Upload merged report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: merged-report
           path: merged-report.html
