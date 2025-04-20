@@ -31,7 +31,7 @@ jobs:
 
       - name: Run Playwright tests (Shard ${{ matrix.shard }})
         run: |
-          xvfb-run npx playwright test  --shard=${{ matrix.shard }}/3
+          xvfb-run npx playwright test  --config=playwright.config.ts --shard=${{ matrix.shard }}/3
           STATUS=$?
           echo "Playwright exited with code $STATUS"
       
@@ -49,12 +49,14 @@ jobs:
         run: |
           echo "Checking for report..."
           ls -la playwright_automation  
+          echo "Checking for playwright_automation..."
+          ls -la playwright-report  
 
       - name: Upload JSON report
         uses: actions/upload-artifact@v4
         with:
           name: shard-${{ matrix.shard }}-json
-          path: playwright-report/test-results.json
+          path: playwright_automation/playwright-report/test-results.json
 
   merge:
     runs-on: ubuntu-latest
