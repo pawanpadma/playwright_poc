@@ -1,4 +1,4 @@
-name: Playwright Tests with Merged Reports
+name: Playwright Test Automation
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run test file
+      - name: Run tests with reports
         continue-on-error: true
         run: |
           set +e
@@ -45,7 +45,7 @@ jobs:
           exit $STATUS
         working-directory: playwright_automation
 
-      - name: Package reports
+      - name: Package test results
         run: |
           zip -r report-${{ matrix.name }}.zip test-results/${{ matrix.name }}
         working-directory: playwright_automation
@@ -68,6 +68,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install jq for JSON processing
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Install dependencies
         run: npm install
         working-directory: playwright_automation
@@ -77,45 +80,68 @@ jobs:
         with:
           path: downloaded-artifacts
 
-      - name: Verify downloaded artifacts
-        run: |
-          echo "Downloaded artifacts structure:"
-          ls -R downloaded-artifacts
-          echo "Zip files found:"
-          find downloaded-artifacts -name '*.zip' -exec echo "Found: {}" \;
-
       - name: Prepare reports for merging
         run: |
           # Create directories
           mkdir -p extracted-reports
           mkdir -p playwright_automation/merge-input
           
-          # Find and unzip all artifacts
+          # Unzip all artifacts
           find downloaded-artifacts -name '*.zip' -exec unzip -d extracted-reports {} \;
           
-          # Prepare merge structure
+          # Process each report
           i=1
-          for report in $(find extracted-reports -name 'report.json'); do
-            dir="playwright_automation/merge-input/run-$i"
-            mkdir -p "$dir"
-            cp "$report" "$dir/test-results.json"
-            i=$((i+1))
+          for report in $(find extracted-reports -type f -name 'report.json'); do
+            echo "Processing report: $report"
+            
+            # Validate and format JSON
+            if jq empty "$report" 2>/dev/null; then
+              dir="playwright_automation/merge-input/run-$i"
+              mkdir -p "$dir"
+              
+              # Transform to compatible format
+              jq '{
+                stats: .stats,
+                results: [.results[] | {
+                  status: .status,
+                  annotations: [],
+                  attachments: [],
+                  duration: .duration,
+                  error: .error,
+                  stdout: [],
+                  stderr: [],
+                  retry: 0,
+                  steps: [],
+                  title: .title,
+                  file: .file
+                }]
+              }' "$report" > "$dir/test-results.json"
+              
+              echo "Created: $dir/test-results.json"
+              i=$((i+1))
+            else
+              echo "Skipping invalid JSON file: $report"
+            fi
           done
-
-          # Debug
-          echo "Merge input structure:"
+          
+          # Verify we have reports to merge
+          if [ $(find playwright_automation/merge-input -name 'test-results.json' | wc -l) -eq 0 ]; then
+            echo "ERROR: No valid test results found for merging"
+            exit 1
+          fi
+          
+          # Debug output
+          echo "Final merge input structure:"
           tree playwright_automation/merge-input || true
-          echo "Test results files found:"
-          find playwright_automation/merge-input -name 'test-results.json' | while read f; do
-            echo "--- $f ---"
-            head -n 3 "$f"
-            echo ""
-          done
 
       - name: Merge reports
         working-directory: playwright_automation
         run: |
+          echo "Merging reports from:"
+          find merge-input -name 'test-results.json' -exec echo "  {}" \;
+          
           npx playwright merge-reports --reporter html merge-input
+          
           mkdir -p ../merged-report
           mv playwright-report ../merged-report/
 

@@ -12,8 +12,8 @@ export default defineConfig({
   // ["html", {outputFolder:'my-report',open:'never'}],
   // ['json', {outputFile: 'my-report/json-report.json' }],
   reporter: [
-    ['json', { outputFile: 'test-results/run/report.json' }],
-    ['html', { outputFolder: 'test-results/run/playwright-report', open: 'never' }]
+    ['json', { outputFile: 'test-results/report.json' }],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }]
   ],
   // ['monocart-reporter', {
   //   name: "My Test Report",
