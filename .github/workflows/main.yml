@@ -84,7 +84,9 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      
+      - name: Install jq for JSON validation
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Prepare reports directory
         run: |
           mkdir -p playwright_automation/json-results
@@ -96,18 +98,22 @@ jobs:
       - name: Merge reports
         working-directory: playwright_automation
         run: |
-          # Copy reports to json-results
-          i=1
-          find ../extracted-reports -name 'report.json' | while read f; do
-            mkdir -p "json-results/run-$i"
-            cp "$f" "json-results/run-$i/report.json"
-            i=$((i + 1))
+          # Verify JSON files are valid
+          find json-results -name 'report.json' | while read f; do
+            echo "Checking $f"
+            if ! jq empty "$f" 2>/dev/null; then
+              echo "ERROR: $f is not valid JSON"
+              exit 1
+            fi
+            echo "--- First 5 lines of $f ---"
+            head -n 5 "$f"
+            echo ""
           done
 
-          echo "Available reports:"
-          find json-results -name 'report.json'
-
-          npx playwright merge-reports --reporter html json-results/*
+          # Merge reports using the directory path (not the files directly)
+          npx playwright merge-reports --reporter html ./json-results
+          
+          # Create and move final report
           mkdir -p ../merged-report
           mv playwright-report ../merged-report/
 
