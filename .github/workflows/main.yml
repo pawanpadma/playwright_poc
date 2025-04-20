@@ -94,4 +94,7 @@ jobs:
         working-directory: playwright_automation
 
       - name: Upload final merged HTML report
-        uses: actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-html-report
+          path: playwright_automation/merged-report
