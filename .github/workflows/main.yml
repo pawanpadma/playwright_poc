@@ -29,7 +29,18 @@ jobs:
       - name: Run Playwright tests (Shard ${{ matrix.shard }})
         run: |
           xvfb-run npx playwright test --shard=${{ matrix.shard }}/3 --reporter=json
-          continue-on-error: true
+          STATUS=$?
+          echo "Playwright exited with code $STATUS"
+      
+          if [ "$STATUS" -eq 0 ]; then
+            echo "passed" > status.txt
+          else
+            echo "failed" > status.txt
+          fi
+      
+          exit $STATUS
+        working-directory: playwright_automation
+        continue-on-error: true
 
       - name: Upload JSON report
         uses: actions/upload-artifact@v4
