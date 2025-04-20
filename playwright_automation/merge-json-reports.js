@@ -1,26 +1,29 @@
 const fs = require('fs');
 const path = require('path');
 
-const root = './downloaded-reports';
+const inputDir = './downloaded-reports';
+const outputDir = './merged';
+const mergedResults = [];
 
-const reportPaths = fs
-  .readdirSync(root)
-  .flatMap((dir) => {
-    const fullPath = path.join(root, dir, 'test-results.json');
-    return fs.existsSync(fullPath) ? [fullPath] : [];
-  });
+function readAllJsonFiles(dir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-const merged = {
-  config: {},
-  suites: [],
-};
-
-for (const reportPath of reportPaths) {
-  const json = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
-  merged.suites.push(...json.suites);
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      readAllJsonFiles(fullPath);
+    } else if (entry.isFile() && entry.name.endsWith('.json')) {
+      const content = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+      mergedResults.push(content);
+    }
+  }
 }
 
-fs.mkdirSync('./merged', { recursive: true });
-fs.writeFileSync('./merged/merged-report.json', JSON.stringify(merged, null, 2));
+readAllJsonFiles(inputDir);
 
-console.log(`✅ Merged ${reportPaths.length} reports`);
+fs.writeFileSync(`${outputDir}/merged-report.json`, JSON.stringify({
+  version: 1,
+  files: mergedResults.flatMap(report => report.files || [])
+}, null, 2));
+
+console.log(`Merged ${mergedResults.length} report(s) into merged-report.json`);
