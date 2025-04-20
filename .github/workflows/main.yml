@@ -79,17 +79,7 @@ jobs:
             ls -R downloaded-reports  
 
 
-      - name: Move reports into working directory
-        run: |
-            mv ../downloaded-reports ./downloaded-reports
-         
-
-      # - name: Merge JSON reports
-      #   run: |
-      #     mkdir -p merged
-      #     node merge-json-reports.js
-      #   working-directory: playwright_automation
-
+     
       - name: Install Playwright
         run: npm install
         
