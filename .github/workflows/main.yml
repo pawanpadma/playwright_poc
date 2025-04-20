@@ -12,10 +12,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - testFile: playwright_automation/tests/example.spec.ts
-            name: Test1
-          - testFile: playwright_automation/tests/home.spec.ts
-            name: Test2
+        - testFile: playwright_automation/tests/example.spec.ts
+          name: Test1
+        - testFile: playwright_automation/tests/home.spec.ts
+          name: Test2
 
     steps:
       - name: Checkout code
@@ -91,32 +91,13 @@ jobs:
       - name: List downloaded reports
         run: find all-reports
 
-      - name: Merge JSON reports and generate HTML
+      - name: Merge JSON reports
         run: |
           mkdir merged-report
-          echo "<html><body><h1>Test Report Index</h1><ul>" > merged-report/index.html
+          npx playwright merge-reports --reporter=html ./all-reports/**/*.json
+          mv playwright-report merged-report/
 
-          for report in all-reports/*.zip; do
-            name=$(basename "$report" .zip)
-            mkdir -p "merged-report/$name"
-            unzip -q "$report" -d "merged-report/tmp"
-            mv "merged-report/tmp/$name"/* "merged-report/$name"
-            rm -rf "merged-report/tmp"
-
-            status="❓"
-            if [[ -f "merged-report/$name/status.txt" ]]; then
-              case $(<"merged-report/$name/status.txt") in
-                passed) status="✅ Passed" ;;
-                failed) status="❌ Failed" ;;
-              esac
-            fi
-
-            echo "<li><a href='$name/index.html'>$name</a> - $status</li>" >> merged-report/index.html
-          done
-
-          echo "</ul></body></html>" >> merged-report/index.html
-
-      - name: Upload merged index report
+      - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
         with:
           name: merged-html-report
