@@ -13,8 +13,9 @@ export default defineConfig({
   reporter: [
     ['list'], // CLI output
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
-    ['json', { outputFile: 'playwright-report/test-results.json' }]
+    ['json', { outputFile: 'test-results.json' }],
   ],
+  outputDir: 'test-results',
 
 
 
