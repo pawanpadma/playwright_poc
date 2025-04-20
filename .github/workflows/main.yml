@@ -45,6 +45,11 @@ jobs:
         working-directory: playwright_automation
         continue-on-error: true
 
+      - name: Debug report path
+        run: |
+          echo "Checking for report..."
+          ls -la playwright-report  
+
       - name: Upload JSON report
         uses: actions/upload-artifact@v4
         with:

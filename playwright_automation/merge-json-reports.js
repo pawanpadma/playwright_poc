@@ -1,10 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 
+const root = './downloaded-reports';
+
 const reportPaths = fs
-  .readdirSync('./downloaded-reports')
-  .filter((folder) => folder.startsWith('shard-'))
-  .map((folder) => path.join('./downloaded-reports', folder, 'test-results.json'));
+  .readdirSync(root)
+  .flatMap((dir) => {
+    const fullPath = path.join(root, dir, 'test-results.json');
+    return fs.existsSync(fullPath) ? [fullPath] : [];
+  });
 
 const merged = {
   config: {},
@@ -16,5 +20,7 @@ for (const reportPath of reportPaths) {
   merged.suites.push(...json.suites);
 }
 
+fs.mkdirSync('./merged', { recursive: true });
 fs.writeFileSync('./merged/merged-report.json', JSON.stringify(merged, null, 2));
+
 console.log(`✅ Merged ${reportPaths.length} reports`);
