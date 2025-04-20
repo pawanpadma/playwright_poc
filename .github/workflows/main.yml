@@ -57,7 +57,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
             name: shard-${{ matrix.shard }}-results
-            path: test-results/
+            path: playwright_automation/test-results/
 
   merge:
     runs-on: ubuntu-latest
@@ -79,7 +79,11 @@ jobs:
         working-directory: playwright_automation
         
 
-      
+      - name: List downloaded artifacts
+        run: |
+            echo "Artifacts downloaded:"
+            find downloaded-reports -type f
+            
       - name: Merge test reports
         run: |
           if [ -d "downloaded-reports" ]; then
@@ -90,6 +94,7 @@ jobs:
             echo "No downloaded-reports directory found. Skipping report merge."
           fi
        
+      
 
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
