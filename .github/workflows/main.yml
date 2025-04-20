@@ -74,9 +74,11 @@ jobs:
         run: |
           mkdir -p merged
           node merge-json-reports.js
+        working-directory: playwright_automation
 
       - name: Install Playwright
-        run: npm ci
+        run: npm install
+        working-directory: playwright_automation
 
       - name: Generate merged HTML report
         run: |
