@@ -28,6 +28,7 @@ jobs:
       # Install dependencies
       - name: Install dependencies
         run: npm install
+        working-directory: playwright_automation
 
       # Run tests
       - name: Run ${{ matrix.name }} test
