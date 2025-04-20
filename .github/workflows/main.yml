@@ -39,7 +39,7 @@ jobs:
         run: |
           set +e
           mkdir -p playwright_automation/test-results  # Ensure the test-results folder exists
-          # Run Playwright tests with JSON reporter
+          echo "Running test file: ${{ matrix.testFile }}"
           npx playwright test ${{ matrix.testFile }} --reporter=json > playwright_automation/test-results/${{ matrix.name }}.json
           STATUS=$?
           echo "Playwright exited with code $STATUS"
@@ -54,11 +54,24 @@ jobs:
         working-directory: playwright_automation
         continue-on-error: true
 
+      - name: Debugging the results directory
+        run: |
+          echo "Checking contents of the test-results directory..."
+          ls -la playwright_automation/test-results/
+
       - name: Rename and zip JSON report
         run: |
           REPORT_DIR="report-${{ matrix.name }}"
           mkdir -p "$REPORT_DIR"
-          mv playwright_automation/test-results/${{ matrix.name }}.json "$REPORT_DIR"
+          
+          # Check if the JSON file exists
+          if [ -f "playwright_automation/test-results/${{ matrix.name }}.json" ]; then
+            mv playwright_automation/test-results/${{ matrix.name }}.json "$REPORT_DIR"
+          else
+            echo "Error: JSON report not found for ${{ matrix.name }}"
+            exit 1
+          fi
+
           mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
           zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
 
