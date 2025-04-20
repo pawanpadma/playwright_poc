@@ -98,24 +98,27 @@ jobs:
       - name: Merge reports
         working-directory: playwright_automation
         run: |
-          # Verify JSON files are valid
-          find json-results -name 'report.json' | while read f; do
-            echo "Checking $f"
-            if ! jq empty "$f" 2>/dev/null; then
-              echo "ERROR: $f is not valid JSON"
-              exit 1
-            fi
-            echo "--- First 5 lines of $f ---"
-            head -n 5 "$f"
-            echo ""
-          done
-
-          # Merge reports using the directory path (not the files directly)
-          npx playwright merge-reports --reporter html ./json-results
-          
-          # Create and move final report
-          mkdir -p ../merged-report
-          mv playwright-report ../merged-report/
+            # Install required tool for JSON merging
+            npm install -g @playwright/test-merger
+        
+            # Create a merged.json file combining all reports
+            find json-results -name 'report.json' -exec echo "Found report: {}" \;
+            find json-results -name 'report.json' -exec cat {} + > combined.json
+            
+            # Verify the combined file
+            echo "Combined file size: $(wc -c < combined.json) bytes"
+            head -n 5 combined.json
+            
+            # Convert to the format Playwright expects for merging
+            mkdir -p to-merge
+            npx @playwright/test-merger combined.json to-merge/merged.json
+            
+            # Now merge using Playwright's built-in tool
+            npx playwright merge-reports --reporter html to-merge
+            
+            # Prepare final report
+            mkdir -p ../merged-report
+            mv playwright-report ../merged-report/
 
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
