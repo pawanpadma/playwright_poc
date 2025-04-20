@@ -118,27 +118,22 @@ jobs:
           echo "Contents of extracted-reports:"
           find extracted-reports
       
-          # Organize report.json files into Playwright's expected structure
-          mkdir json-results
+          # Place report.json files inside playwright_automation/json-results
+          mkdir -p playwright_automation/json-results
           i=1
           find extracted-reports -type f -name 'report.json' | while read f; do
-            mkdir -p "json-results/run-$i"
-            cp "$f" "json-results/run-$i/report.json"
+            mkdir -p "playwright_automation/json-results/run-$i"
+            cp "$f" "playwright_automation/json-results/run-$i/report.json"
             i=$((i + 1))
           done
       
           echo "JSON structure for merge:"
-          find json-results
+          find playwright_automation/json-results
       
-          # ✅ Run from inside the folder where @playwright/test is installed
+          # Run merge from inside playwright_automation
           cd playwright_automation
-          npx playwright merge-reports --reporter html ../json-results
+          npx playwright merge-reports --reporter html json-results
           mv playwright-report ../merged-report/
-      
-      
-        
-        
-        
         
       
       - name: Upload merged HTML report
