@@ -78,6 +78,11 @@ jobs:
             echo "Checking contents of downloaded-reports..."
             ls -R downloaded-reports  
 
+
+      - name: Move reports into working directory
+        run: |
+            mv ../downloaded-reports ./downloaded-reports
+        working-directory: playwright_automation      
       - name: Merge JSON reports
         run: |
           mkdir -p merged
