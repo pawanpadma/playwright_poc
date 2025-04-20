@@ -50,18 +50,21 @@ jobs:
           exit $STATUS
         working-directory: playwright_automation
 
-      - name: Verify test outputs
+      - name: Verify and package test results
         run: |
           echo "Current directory: $(pwd)"
-          echo "Test outputs for ${{ matrix.name }}:"
-          ls -la test-results/${{ matrix.name }} || echo "No results directory found"
-          echo "Report.json:"
-          [ -f "test-results/${{ matrix.name }}/report.json" ] && head -n 5 "test-results/${{ matrix.name }}/report.json" || echo "No report.json found"
-        working-directory: playwright_automation
-
-      - name: Package test results
-        run: |
-          zip -r report-${{ matrix.name }}.zip test-results/${{ matrix.name }}
+          echo "Contents of test-results:"
+          ls -la test-results || echo "No test-results directory found"
+          
+          # Only package if directory exists and contains files
+          if [ -d "test-results/${{ matrix.name }}" ] && [ -n "$(ls -A test-results/${{ matrix.name }})" ]; then
+            echo "Packaging test results for ${{ matrix.name }}"
+            zip -r report-${{ matrix.name }}.zip test-results/${{ matrix.name }}
+          else
+            echo "No test results found for ${{ matrix.name }} - creating empty zip"
+            mkdir -p empty-${{ matrix.name }}
+            zip -r report-${{ matrix.name }}.zip empty-${{ matrix.name }}
+          fi
         working-directory: playwright_automation
 
       - name: Upload test artifacts
@@ -106,8 +109,8 @@ jobs:
           # Process each report
           i=1
           for report in $(find extracted-reports -name 'report.json'); do
-            echo "Processing report: $report"
             if [ -f "$report" ]; then
+              echo "Processing valid report: $report"
               dir="playwright_automation/merge-input/run-$i"
               mkdir -p "$dir"
               cp "$report" "$dir/test-results.json"
