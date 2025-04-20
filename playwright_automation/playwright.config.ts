@@ -1,27 +1,20 @@
 import { defineConfig, devices } from '@playwright/test';
+import * as process from 'process';
 
 export default defineConfig({
   testDir: './tests',
   timeout: 20 * 1000,
   workers:2,
   
+  
 
  
-  //workers: process.env.CI ? 1 : undefined,
-  // reporter: [["list"], 
-  // ["html", {outputFolder:'my-report',open:'never'}],
-  // ['json', {outputFile: 'my-report/json-report.json' }],
+ 
   reporter: [
-    ['json', { outputFile: 'test-results/test-results.json' }],
-    // You can also add other reporters, e.g., HTML
+    ['json', { outputFile: `test-results/test-results-${process.env.SHARD_INDEX || 'local'}.json` }],
     ['html', { open: 'never' }],
   ],
-  // ['monocart-reporter', {
-  //   name: "My Test Report",
-  //   outputFile: './monocart-report/index.html',
-  //   includeAnnotations: true, // Include annotations in the report
-  // }]
-  
+
 
 
 
