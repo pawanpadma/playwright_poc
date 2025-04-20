@@ -87,7 +87,7 @@ jobs:
       - name: Merge JSONs and generate HTML report
         run: |
           mkdir merged-report
-          
+
           # Unzip all .zip artifacts
           mkdir extracted-reports
           for zip in all-reports/*.zip; do
@@ -100,8 +100,9 @@ jobs:
 
           # Merge and generate report
           cd playwright_automation
-          npx playwright merge-reports --reporter html playwright_automation/json-results/*
+          npx playwright merge-reports --reporter html json-results/*
           mv playwright-report ../merged-report/
+
 
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
