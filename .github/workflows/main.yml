@@ -47,9 +47,7 @@ jobs:
 
       - name: Package reports
         run: |
-          mkdir -p packaged-reports
-          cp -r test-results/${{ matrix.name }} packaged-reports/report-${{ matrix.name }}
-          zip -r report-${{ matrix.name }}.zip packaged-reports/report-${{ matrix.name }}
+          zip -r report-${{ matrix.name }}.zip test-results/${{ matrix.name }}
         working-directory: playwright_automation
 
       - name: Upload test artifacts
@@ -77,16 +75,14 @@ jobs:
       - name: Download all reports
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
-          pattern: 'report-*.zip'
-        
+          path: downloaded-artifacts
 
-      - name: Debug downloaded artifacts
+      - name: Verify downloaded artifacts
         run: |
-            echo "Artifacts directory contents:"
-            ls -la artifacts/
-            echo "Zip files found:"
-            find artifacts -name '*.zip' -exec echo "Found: {}" \;    
+          echo "Downloaded artifacts structure:"
+          ls -R downloaded-artifacts
+          echo "Zip files found:"
+          find downloaded-artifacts -name '*.zip' -exec echo "Found: {}" \;
 
       - name: Prepare reports for merging
         run: |
@@ -94,8 +90,8 @@ jobs:
           mkdir -p extracted-reports
           mkdir -p playwright_automation/merge-input
           
-          # Unzip artifacts (now in artifacts/ directory)
-          find artifacts -name '*.zip' -exec unzip -d extracted-reports {} \;
+          # Find and unzip all artifacts
+          find downloaded-artifacts -name '*.zip' -exec unzip -d extracted-reports {} \;
           
           # Prepare merge structure
           i=1
@@ -109,7 +105,12 @@ jobs:
           # Debug
           echo "Merge input structure:"
           tree playwright_automation/merge-input || true
-          find playwright_automation/merge-input -name 'test-results.json' -exec echo "Found: {}" \;
+          echo "Test results files found:"
+          find playwright_automation/merge-input -name 'test-results.json' | while read f; do
+            echo "--- $f ---"
+            head -n 3 "$f"
+            echo ""
+          done
 
       - name: Merge reports
         working-directory: playwright_automation
