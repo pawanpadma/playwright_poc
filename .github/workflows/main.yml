@@ -93,9 +93,18 @@ jobs:
         run: npm install
         working-directory: playwright_automation
 
+      - name: Move downloaded-reports to correct location
+        run: |
+          mv ../downloaded-reports ./downloaded-reports
+          echo "Checking contents of downloaded-reports..."
+          ls -la ./downloaded-reports
+          ls -R ./downloaded-reports
+      
       - name: Merge reports and generate HTML
         run: |
-          REPORT_FILES=$(find downloaded-reports -name 'test-results.json')
+          # Ensure correct path and merge
+          REPORT_FILES=$(find ./downloaded-reports -name 'test-results.json')
+          echo "Found reports: $REPORT_FILES"
           npx playwright merge-reports --reporter html $REPORT_FILES
 
       - name: Upload merged HTML report
