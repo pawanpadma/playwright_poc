@@ -31,7 +31,7 @@ jobs:
 
       - name: Run Playwright tests (Shard ${{ matrix.shard }})
         run: |
-          xvfb-run npx playwright test --config=playwright_automation/playwright.config.ts --shard=${{ matrix.shard }}/3
+          xvfb-run npx playwright test  --shard=${{ matrix.shard }}/3
           STATUS=$?
           echo "Playwright exited with code $STATUS"
       
