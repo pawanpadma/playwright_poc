@@ -32,17 +32,27 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run tests with reports
+      - name: Run tests with explicit report paths
         continue-on-error: true
         run: |
           set +e
           mkdir -p test-results
           xvfb-run npx playwright test ${{ matrix.testFile }} \
             --reporter=json,html \
-            --output=test-results/${{ matrix.name }}
+            --output=test-results/${{ matrix.name }} \
+            --reporter-json-output=test-results/${{ matrix.name }}/report.json \
+            --reporter-html-output=test-results/${{ matrix.name }}/html-report
           STATUS=$?
           echo "$([ "$STATUS" -eq 0 ] && echo 'passed' || echo 'failed')" > test-results/${{ matrix.name }}/status.txt
           exit $STATUS
+        working-directory: playwright_automation
+
+      - name: Verify test outputs
+        run: |
+          echo "Test outputs for ${{ matrix.name }}:"
+          ls -la test-results/${{ matrix.name }}
+          echo "Report.json content (first 5 lines):"
+          head -n 5 test-results/${{ matrix.name }}/report.json || echo "No report.json found"
         working-directory: playwright_automation
 
       - name: Package test results
@@ -80,7 +90,14 @@ jobs:
         with:
           path: downloaded-artifacts
 
-      - name: Prepare reports for merging
+      - name: Debug artifact structure
+        run: |
+          echo "Artifact directory structure:"
+          find downloaded-artifacts -type f -exec echo "Found: {}" \;
+          echo "Zip files:"
+          find downloaded-artifacts -name '*.zip' -exec echo "{}" \;
+
+      - name: Extract and prepare reports
         run: |
           # Create directories
           mkdir -p extracted-reports
@@ -89,55 +106,34 @@ jobs:
           # Unzip all artifacts
           find downloaded-artifacts -name '*.zip' -exec unzip -d extracted-reports {} \;
           
+          # Debug extracted files
+          echo "Extracted files:"
+          find extracted-reports -type f -name 'report.json' -exec echo "Found report: {}" \;
+          
           # Process each report
           i=1
-          for report in $(find extracted-reports -type f -name 'report.json'); do
-            echo "Processing report: $report"
-            
-            # Validate and format JSON
-            if jq empty "$report" 2>/dev/null; then
-              dir="playwright_automation/merge-input/run-$i"
-              mkdir -p "$dir"
-              
-              # Transform to compatible format
-              jq '{
-                stats: .stats,
-                results: [.results[] | {
-                  status: .status,
-                  annotations: [],
-                  attachments: [],
-                  duration: .duration,
-                  error: .error,
-                  stdout: [],
-                  stderr: [],
-                  retry: 0,
-                  steps: [],
-                  title: .title,
-                  file: .file
-                }]
-              }' "$report" > "$dir/test-results.json"
-              
-              echo "Created: $dir/test-results.json"
-              i=$((i+1))
-            else
-              echo "Skipping invalid JSON file: $report"
-            fi
+          for report in $(find extracted-reports -type f -path '*/test-results/*/report.json'); do
+            echo "Processing valid report: $report"
+            dir="playwright_automation/merge-input/run-$i"
+            mkdir -p "$dir"
+            cp "$report" "$dir/test-results.json"
+            i=$((i+1))
           done
           
           # Verify we have reports to merge
+          echo "Final reports to merge:"
+          find playwright_automation/merge-input -name 'test-results.json' -exec echo "Mergeable: {}" \;
+          
           if [ $(find playwright_automation/merge-input -name 'test-results.json' | wc -l) -eq 0 ]; then
-            echo "ERROR: No valid test results found for merging"
+            echo "ERROR: No valid test results found in extracted-reports"
+            find extracted-reports -type f -exec echo "Existing file: {}" \;
             exit 1
           fi
-          
-          # Debug output
-          echo "Final merge input structure:"
-          tree playwright_automation/merge-input || true
 
       - name: Merge reports
         working-directory: playwright_automation
         run: |
-          echo "Merging reports from:"
+          echo "Merging these reports:"
           find merge-input -name 'test-results.json' -exec echo "  {}" \;
           
           npx playwright merge-reports --reporter html merge-input
