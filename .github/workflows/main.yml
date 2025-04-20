@@ -60,41 +60,41 @@ jobs:
             path: playwright_automation/test-results/
 
   merge:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download JSON reports for all shards
-        uses: actions/download-artifact@v4
-        with:
-          path: downloaded-reports
-          merge-multiple: true
-
-
-     
-      - name: Install Playwright
-        run: npm install
-        working-directory: playwright_automation
-        
-
-      - name: List downloaded artifacts
-        run: |
-            echo "Artifacts downloaded:"
-            find downloaded-reports -type f
-
-      - name: Merge test reports
-        run: |
-              REPORT_DIRS=$(find downloaded-reports -type f -name "test-results.json" -exec dirname {} \;)
-              echo "Merging from directories: $REPORT_DIRS"
-              npx playwright merge-reports --reporter html $REPORT_DIRS
-        working-directory: playwright_automation
-       
-      
-
-      - name: Upload merged HTML report
-        uses: actions/upload-artifact@v4
-        with:
-          name: merged-html-report
-          path: playwright-report/
+              runs-on: ubuntu-latest
+              needs: test
+              steps:
+                - name: Checkout code
+                  uses: actions/checkout@v4
+          
+                - name: Download JSON reports for all shards
+                  uses: actions/download-artifact@v4
+                  with:
+                    path: downloaded-reports
+                    merge-multiple: true
+          
+                - name: Debug downloaded reports path
+                  run: |
+                    echo "Listing contents of downloaded-reports:"
+                    ls -la downloaded-reports
+          
+                - name: Install Playwright
+                  run: npm install
+                  working-directory: playwright_automation
+          
+                - name: Merge test reports
+                  run: |
+                    if [ -d "downloaded-reports" ]; then
+                      REPORT_DIRS=$(find ./downloaded-reports -type f -name "test-results.json" -exec dirname {} \;)
+                      echo "Merging from directories: $REPORT_DIRS"
+                      npx playwright merge-reports --reporter html $REPORT_DIRS
+                    else
+                      echo "No downloaded-reports directory found. Skipping report merge."
+                    fi
+                  working-directory: playwright_automation
+          
+                - name: Upload merged HTML report
+                  uses: actions/upload-artifact@v4
+                  with:
+                    name: merged-html-report
+                    path: playwright-report/
+          
