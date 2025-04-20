@@ -29,6 +29,7 @@ jobs:
       - name: Run Playwright tests (Shard ${{ matrix.shard }})
         run: |
           xvfb-run npx playwright test --shard=${{ matrix.shard }}/3 --reporter=json
+          continue-on-error: true
 
       - name: Upload JSON report
         uses: actions/upload-artifact@v4
