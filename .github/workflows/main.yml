@@ -94,14 +94,21 @@ jobs:
             unzip -q "$zip" -d extracted-reports
           done
 
-          # Place report.json files inside playwright_automation/json-results
+          # Place each report.json in its own subfolder under json-results
           mkdir -p playwright_automation/json-results
-          find extracted-reports -type f -name 'report.json' -exec cp {} playwright_automation/json-results/ \;
+          i=1
+          find extracted-reports -type f -name 'report.json' | while read f; do
+            mkdir -p "playwright_automation/json-results/run-$i"
+            cp "$f" "playwright_automation/json-results/run-$i/report.json"
+            i=$((i + 1))
+          done
 
           # Merge and generate report
           cd playwright_automation
-          npx playwright merge-reports --reporter html json-results/*
+          npx playwright merge-reports --reporter html json-results
           mv playwright-report ../merged-report/
+
+
 
 
       - name: Upload merged HTML report
