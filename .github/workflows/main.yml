@@ -86,32 +86,22 @@ jobs:
 
       - name: Merge JSONs and generate HTML report
         run: |
-          mkdir merged-report
-
-          # Unzip all .zip artifacts
-          mkdir extracted-reports
-          for zip in all-reports/*.zip; do
-            unzip -q "$zip" -d extracted-reports
-          done
-
-          # Place each report.json in its own subfolder under json-results
-          mkdir -p playwright_automation/json-results
-          i=1
-          find extracted-reports -type f -name 'report.json' | while read f; do
-            mkdir -p "playwright_automation/json-results/run-$i"
-            cp "$f" "playwright_automation/json-results/run-$i/report.json"
-            i=$((i + 1))
-          done
-          echo "Checking structure before merge:"
-          find playwright_automation/json-results
-
-          echo "Previewing a report.json:"
-          cat playwright_automation/json-results/run-1/report.json | head -n 10
-
           # Merge and generate report
           cd playwright_automation
+
+          echo "Checking contents of each report.json"
+          find json-results -name 'report.json' | while read f; do
+            echo "---- $f ----"
+            cat "$f" | head -n 5
+            echo ""
+          done
+
+          echo "Merging from:"
+          find json-results -mindepth 1 -maxdepth 1 -type d
+
           npx playwright merge-reports --reporter html $(find json-results -mindepth 1 -maxdepth 1 -type d)
           mv playwright-report ../merged-report/
+
 
 
 
