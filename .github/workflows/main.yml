@@ -1,106 +1,48 @@
-name: Playwright Test with Sharding and Merged Report
+name: Merge Playwright Reports
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
-  test:
+  merge-reports:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        shard: [1, 2] # Adjust this based on how many shards you want
+
     steps:
-      - name: Checkout code
+      - name: Checkout target repo
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Download artifacts from another workflow
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-reports
+          merge-multiple: true
+          repository: pawanpadma/playwright_poc
+          run-id: 14561771576
+
+      - name: List contents of downloaded-reports
+        run: |
+          echo "Listing contents of downloaded-reports:"
+          ls -R downloaded-reports
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Install dependencies
         working-directory: playwright_automation
-        continue-on-error: true
         run: npm install
 
-      - name: Ensure report directory exists
-        run: mkdir -p playwright-report
-
-      - name: Run Playwright tests (Shard ${{ matrix.shard }})
-        run: |
-          xvfb-run npx playwright test  --config=playwright.config.ts --shard=${{ matrix.shard }}/3
-          STATUS=$?
-          echo "Playwright exited with code $STATUS"
-      
-          if [ "$STATUS" -eq 0 ]; then
-            echo "passed" > status.txt
-          else
-            echo "failed" > status.txt
-          fi
-      
-          exit $STATUS
+      - name: Merge Playwright reports
         working-directory: playwright_automation
-        continue-on-error: true
-
-      - name: Debug report path
-        run: |
-          echo "Checking for report..."
-          ls -la playwright_automation  
-          echo "Checking for playwright_automation..."
-          ls -la playwright-report  
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-            name: shard-${{ matrix.shard }}-results
-            path: playwright_automation/test-results/
-
-  merge:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download JSON reports for all shards
-        uses: actions/download-artifact@v4
-        with:
-          path: downloaded-reports
-          merge-multiple: true
-
-      - name: Debug downloaded reports path
-        run: |
-          echo "Listing contents of downloaded-reports:"
-          ls -la downloaded-reports
-
-      - name: Install Playwright
-        run: npm install
-        working-directory: playwright_automation
-
-      - name: Merge test reports
         run: |
           echo "Current directory: $(pwd)"
-          if [ -d "../downloaded-reports" ]; then
-            REPORT_DIRS=$(find ../downloaded-reports -type f -name "test-results.json" -exec dirname {} \;)
-            echo "Merging from directories: $REPORT_DIRS"
-            npx playwright merge-reports --reporter html $REPORT_DIRS
-          else
-            echo "No downloaded-reports directory found. Skipping report merge."
-          fi
-        working-directory: playwright_automation
-      
-
-      - name: Check playwright-report directory
-        run: |
-          echo "Contents of playwright-report:"
-          ls -la playwright-report
+          mkdir -p merged-results
+          cp ../downloaded-reports/test-results.json merged-results/
+          npx playwright merge-reports --reporter html merged-results
 
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
         with:
-          name: merged-html-report
-          path: playwright-report/
+          name: merged-playwright-report
+          path: playwright_automation/playwright-report/
