@@ -105,7 +105,7 @@ jobs:
         run: npm install --save-dev @playwright/test
         working-directory: playwright_automation
       
-      - name: Merge JSONs and generate final HTML report
+      - name: Merge JSONs and generate HTML report
         run: |
           mkdir merged-report
       
@@ -118,7 +118,7 @@ jobs:
           echo "Contents of extracted-reports:"
           find extracted-reports
       
-          # Collect JSONs into subfolders as required by Playwright
+          # Organize report.json files into Playwright's expected structure
           mkdir json-results
           i=1
           find extracted-reports -type f -name 'report.json' | while read f; do
@@ -130,12 +130,11 @@ jobs:
           echo "JSON structure for merge:"
           find json-results
       
-          # ✅ Merge from inside playwright_automation to use correct package
-          #cd playwright_automation
-          echo "full path"
-          ls -la
+          # ✅ Run from inside the folder where @playwright/test is installed
+          cd playwright_automation
           npx playwright merge-reports --reporter html ../json-results
           mv playwright-report ../merged-report/
+      
       
         
         
