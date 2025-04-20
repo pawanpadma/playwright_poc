@@ -85,13 +85,9 @@ jobs:
         working-directory: playwright_automation
         
 
-      - name: Debug where artifacts landed
-        run: |
-          echo "PWD: $(pwd)"
-          echo "List everything recursively:"
-          find . -type f
       
       - name: Merge reports and generate HTML
+        working-directory: playwright_automation
         run: |
           REPORT_FILES=$(find ../downloaded-reports -name 'test-results.json')
           echo "Found reports: $REPORT_FILES"
