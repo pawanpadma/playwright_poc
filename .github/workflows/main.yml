@@ -32,11 +32,14 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run tests with explicit report paths
+      - name: Create results directory
+        run: mkdir -p playwright_automation/test-results/${{ matrix.name }}
+        working-directory: playwright_automation
+
+      - name: Run tests with explicit output
         continue-on-error: true
         run: |
           set +e
-          mkdir -p test-results
           xvfb-run npx playwright test ${{ matrix.testFile }} \
             --reporter=json,html \
             --output=test-results/${{ matrix.name }} \
@@ -49,10 +52,11 @@ jobs:
 
       - name: Verify test outputs
         run: |
+          echo "Current directory: $(pwd)"
           echo "Test outputs for ${{ matrix.name }}:"
-          ls -la test-results/${{ matrix.name }}
-          echo "Report.json content (first 5 lines):"
-          head -n 5 test-results/${{ matrix.name }}/report.json || echo "No report.json found"
+          ls -la test-results/${{ matrix.name }} || echo "No results directory found"
+          echo "Report.json:"
+          [ -f "test-results/${{ matrix.name }}/report.json" ] && head -n 5 "test-results/${{ matrix.name }}/report.json" || echo "No report.json found"
         working-directory: playwright_automation
 
       - name: Package test results
@@ -90,13 +94,6 @@ jobs:
         with:
           path: downloaded-artifacts
 
-      - name: Debug artifact structure
-        run: |
-          echo "Artifact directory structure:"
-          find downloaded-artifacts -type f -exec echo "Found: {}" \;
-          echo "Zip files:"
-          find downloaded-artifacts -name '*.zip' -exec echo "{}" \;
-
       - name: Extract and prepare reports
         run: |
           # Create directories
@@ -106,38 +103,29 @@ jobs:
           # Unzip all artifacts
           find downloaded-artifacts -name '*.zip' -exec unzip -d extracted-reports {} \;
           
-          # Debug extracted files
-          echo "Extracted files:"
-          find extracted-reports -type f -name 'report.json' -exec echo "Found report: {}" \;
-          
           # Process each report
           i=1
-          for report in $(find extracted-reports -type f -path '*/test-results/*/report.json'); do
-            echo "Processing valid report: $report"
-            dir="playwright_automation/merge-input/run-$i"
-            mkdir -p "$dir"
-            cp "$report" "$dir/test-results.json"
-            i=$((i+1))
+          for report in $(find extracted-reports -name 'report.json'); do
+            echo "Processing report: $report"
+            if [ -f "$report" ]; then
+              dir="playwright_automation/merge-input/run-$i"
+              mkdir -p "$dir"
+              cp "$report" "$dir/test-results.json"
+              i=$((i+1))
+            fi
           done
           
           # Verify we have reports to merge
-          echo "Final reports to merge:"
-          find playwright_automation/merge-input -name 'test-results.json' -exec echo "Mergeable: {}" \;
-          
           if [ $(find playwright_automation/merge-input -name 'test-results.json' | wc -l) -eq 0 ]; then
-            echo "ERROR: No valid test results found in extracted-reports"
-            find extracted-reports -type f -exec echo "Existing file: {}" \;
+            echo "ERROR: No test results found. Debugging extracted files:"
+            find extracted-reports -type f -exec echo "Found file: {}" \;
             exit 1
           fi
 
       - name: Merge reports
         working-directory: playwright_automation
         run: |
-          echo "Merging these reports:"
-          find merge-input -name 'test-results.json' -exec echo "  {}" \;
-          
           npx playwright merge-reports --reporter html merge-input
-          
           mkdir -p ../merged-report
           mv playwright-report ../merged-report/
 
