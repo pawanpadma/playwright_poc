@@ -83,11 +83,12 @@ jobs:
         run: |
             mv ../downloaded-reports ./downloaded-reports
         working-directory: playwright_automation      
-      - name: Merge JSON reports
-        run: |
-          mkdir -p merged
-          node merge-json-reports.js
-        working-directory: playwright_automation
+
+      # - name: Merge JSON reports
+      #   run: |
+      #     mkdir -p merged
+      #     node merge-json-reports.js
+      #   working-directory: playwright_automation
 
       - name: Install Playwright
         run: npm install
@@ -102,8 +103,7 @@ jobs:
       
       - name: Merge reports and generate HTML
         run: |
-          # Ensure correct path and merge
-          REPORT_FILES=$(find ./downloaded-reports -name 'test-results.json')
+          REPORT_FILES=$(find downloaded-reports -name 'test-results.json')
           echo "Found reports: $REPORT_FILES"
           npx playwright merge-reports --reporter html $REPORT_FILES
 
