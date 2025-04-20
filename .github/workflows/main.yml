@@ -35,7 +35,8 @@ jobs:
       - name: Run test file and capture status
         run: |
           set +e
-          xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=json
+          # Run Playwright tests with JSON reporter
+          npx playwright test ${{ matrix.testFile }} --reporter=json > playwright_automation/test-results/${{ matrix.name }}.json
           STATUS=$?
           echo "Playwright exited with code $STATUS"
       
@@ -52,7 +53,8 @@ jobs:
       - name: Rename and zip JSON report
         run: |
           REPORT_DIR="report-${{ matrix.name }}"
-          mv playwright_automation/test-results "$REPORT_DIR"
+          mkdir -p "$REPORT_DIR"
+          mv playwright_automation/test-results/${{ matrix.name }}.json "$REPORT_DIR"
           mv playwright_automation/status.txt "$REPORT_DIR/status.txt"
           zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
 
@@ -91,7 +93,7 @@ jobs:
       - name: List downloaded reports
         run: find all-reports
 
-      - name: Merge JSON reports
+      - name: Merge JSON reports and generate HTML
         run: |
           mkdir merged-report
           npx playwright merge-reports --reporter=html ./all-reports/**/*.json
