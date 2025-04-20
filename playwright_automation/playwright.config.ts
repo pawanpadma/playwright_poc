@@ -10,10 +10,7 @@ export default defineConfig({
 
  
  
-  reporter: [
-    ['json', { outputFile: `test-results/test-results-${process.env.SHARD_INDEX || 'local'}.json` }],
-    ['html', { open: 'never' }],
-  ],
+  reporter: [['json', { outputFile: 'playwright-report/test-results.json' }]],
 
 
 
