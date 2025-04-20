@@ -13,8 +13,9 @@ export default defineConfig({
   // ['json', {outputFile: 'my-report/json-report.json' }],
   reporter: [
 
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['json', { outputFile: 'report.json' }],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+   
    // ✅ Needed for merge-reports
   ],
   // ['monocart-reporter', {

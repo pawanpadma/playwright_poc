@@ -130,10 +130,15 @@ jobs:
           echo "JSON structure for merge:"
           find playwright_automation/json-results
       
-          # Run merge from inside playwright_automation
+          # 🔍 Debug: Check JSON content
+          echo "Checking report contents:"
+          cat playwright_automation/json-results/run-1/report.json | head -n 20
+      
+          # ✅ Run from inside playwright_automation
           cd playwright_automation
           npx playwright merge-reports --reporter html json-results
           mv playwright-report ../merged-report/
+      
         
       
       - name: Upload merged HTML report
