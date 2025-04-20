@@ -102,6 +102,11 @@ jobs:
             cp "$f" "playwright_automation/json-results/run-$i/report.json"
             i=$((i + 1))
           done
+          echo "Checking structure before merge:"
+          find playwright_automation/json-results
+
+          echo "Previewing a report.json:"
+          cat playwright_automation/json-results/run-1/report.json | head -n 10
 
           # Merge and generate report
           cd playwright_automation
