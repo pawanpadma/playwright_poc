@@ -82,7 +82,7 @@ jobs:
       - name: Move reports into working directory
         run: |
             mv ../downloaded-reports ./downloaded-reports
-        working-directory: playwright_automation      
+         
 
       # - name: Merge JSON reports
       #   run: |
@@ -92,21 +92,20 @@ jobs:
 
       - name: Install Playwright
         run: npm install
-        working-directory: playwright_automation
+        
 
-      # - name: Move downloaded-reports to correct location
-      #   run: |
-      #     mv ../downloaded-reports ./downloaded-reports
-      #     echo "Checking contents of downloaded-reports..."
-      #     ls -la ./downloaded-reports
-      #     ls -R ./downloaded-reports
+      - name: Debug where artifacts landed
+        run: |
+          echo "PWD: $(pwd)"
+          echo "List everything recursively:"
+          find . -type f
       
       - name: Merge reports and generate HTML
         run: |
           REPORT_FILES=$(find ../downloaded-reports -name 'test-results.json')
           echo "Found reports: $REPORT_FILES"
           npx playwright merge-reports --reporter html $REPORT_FILES
-        working-directory: playwright_automation
+       
 
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
