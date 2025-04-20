@@ -36,7 +36,7 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          xvfb-run npx playwright test ${{ matrix.testFile }}
+          xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=json,html
           STATUS=$?
           echo "Playwright exited with code $STATUS"
           if [ "$STATUS" -eq 0 ]; then
@@ -47,13 +47,14 @@ jobs:
           exit $STATUS
         working-directory: playwright_automation
 
-      - name: Rename and zip HTML + JSON report
+      - name: Prepare and upload report
         run: |
           REPORT_DIR="report-${{ matrix.name }}"
           mkdir -p "$REPORT_DIR"
-          mv playwright_automation/playwright-report "$REPORT_DIR/"
-          mv playwright_automation/status.txt "$REPORT_DIR/"
-          mv playwright_automation/report.json "$REPORT_DIR/"
+          # Copy both HTML and JSON reports
+          cp playwright_automation/report.json "$REPORT_DIR/"
+          cp -r playwright_automation/playwright-report "$REPORT_DIR/"
+          cp playwright_automation/status.txt "$REPORT_DIR/" || true
           zip -r "$REPORT_DIR.zip" "$REPORT_DIR/"
 
       - name: Upload zipped report
@@ -82,47 +83,48 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          pattern: 'report-*.zip'
           merge-multiple: true
 
-      - name: Install jq for JSON validation
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Prepare reports directory
+      - name: Prepare reports for merging
         run: |
-          mkdir -p playwright_automation/json-results
-          # Find and unzip all downloaded artifacts
+          # Create directory for extracted reports
+          mkdir -p extracted-reports
+          
+          # Unzip all artifacts
           find artifacts -name '*.zip' -exec unzip -d extracted-reports {} \;
-          # Verify extracted files
-          find extracted-reports -name 'report.json' -exec echo "Found report: {}" \;
+          
+          # Verify we have the expected files
+          echo "Extracted files:"
+          find extracted-reports -name 'report.json' -exec echo "Found: {}" \;
+
+          # Create directory structure for merging
+          mkdir -p playwright_automation/merge-input
+          i=1
+          for report in $(find extracted-reports -name 'report.json'); do
+            dir="playwright_automation/merge-input/run-$i"
+            mkdir -p "$dir"
+            cp "$report" "$dir/test-results.json"
+            i=$((i+1))
+          done
+
+          # Debug: Show merge input structure
+          echo "Merge input structure:"
+          tree playwright_automation/merge-input || true
 
       - name: Merge reports
         working-directory: playwright_automation
         run: |
-            # Create the proper directory structure Playwright expects
-            mkdir -p all-results
-            
-            # Copy each report.json to a numbered subdirectory as test-results.json
-            i=1
-            for report in $(find json-results -name 'report.json'); do
-              dir="all-results/run-$i"
-              mkdir -p "$dir"
-              cp "$report" "$dir/test-results.json"
-              i=$((i+1))
-            done
-            
-            # Verify the structure (debugging)
-            echo "Generated directory structure:"
-            tree all-results || true
-            echo ""
-            echo "First 3 lines of each test-results.json:"
-            find all-results -name 'test-results.json' -exec sh -c 'echo "--- {} ---"; head -n 3 {}' \;
-            
-            # Merge reports using Playwright's built-in tool
-            npx playwright merge-reports --reporter html all-results
-            
-            # Prepare final report directory
-            mkdir -p ../merged-report
-            mv playwright-report ../merged-report/
+          # Verify files exist
+          echo "Files to merge:"
+          find merge-input -name 'test-results.json' -exec echo "Found: {}" \;
+          
+          # Merge reports
+          npx playwright merge-reports --reporter html merge-input
+          
+          # Prepare final report
+          mkdir -p ../merged-report
+          mv playwright-report ../merged-report/
 
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
