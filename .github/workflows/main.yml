@@ -81,40 +81,39 @@ jobs:
       - name: Download all reports
         uses: actions/download-artifact@v4
         with:
-          path: all-reports
+          path: artifacts
           merge-multiple: true
 
-      - name: Merge JSONs and generate HTML report
+      - name: Debug extracted files
         run: |
-          # Merge and generate report
-          cd playwright_automation
+            find extracted-reports -type f
+            ls -laR extracted-reports
+            
+      - name: Prepare reports directory
+        run: |
+          mkdir -p playwright_automation/json-results
+          # Find and unzip all downloaded artifacts
+          find artifacts -name '*.zip' -exec unzip -d extracted-reports {} \;
+          # Verify extracted files
+          find extracted-reports -name 'report.json' -exec echo "Found report: {}" \;
 
-          # Create json-results directory inside this folder
-          mkdir -p json-results
+      - name: Merge reports
+        working-directory: playwright_automation
+        run: |
+          # Copy reports to json-results
           i=1
-          find ../extracted-reports -type f -name 'report.json' | while read f; do
+          find ../extracted-reports -name 'report.json' | while read f; do
             mkdir -p "json-results/run-$i"
             cp "$f" "json-results/run-$i/report.json"
             i=$((i + 1))
           done
 
-          echo "Checking contents of each report.json"
-          find json-results -name 'report.json' | while read f; do
-            echo "---- $f ----"
-            cat "$f" | head -n 5
-            echo ""
-          done
+          echo "Available reports:"
+          find json-results -name 'report.json'
 
-          echo "Merging from:"
-          find json-results -mindepth 1 -maxdepth 1 -type d
-
-          npx playwright merge-reports --reporter html $(find json-results -mindepth 1 -maxdepth 1 -type d)
+          npx playwright merge-reports --reporter html json-results/*
+          mkdir -p ../merged-report
           mv playwright-report ../merged-report/
-
-
-
-
-
 
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
