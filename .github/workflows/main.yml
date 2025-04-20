@@ -89,6 +89,15 @@ jobs:
           # Merge and generate report
           cd playwright_automation
 
+          # Create json-results directory inside this folder
+          mkdir -p json-results
+          i=1
+          find ../extracted-reports -type f -name 'report.json' | while read f; do
+            mkdir -p "json-results/run-$i"
+            cp "$f" "json-results/run-$i/report.json"
+            i=$((i + 1))
+          done
+
           echo "Checking contents of each report.json"
           find json-results -name 'report.json' | while read f; do
             echo "---- $f ----"
@@ -101,6 +110,7 @@ jobs:
 
           npx playwright merge-reports --reporter html $(find json-results -mindepth 1 -maxdepth 1 -type d)
           mv playwright-report ../merged-report/
+
 
 
 
