@@ -12,12 +12,10 @@ jobs:
     strategy:
       matrix:
         include:
-        - testFile: playwright_automation/tests/example.spec.ts
-          name: Test1
-        - testFile: playwright_automation/tests/home.spec.ts
-          name: Test2
-        # - testFile: playwright_automation/tests/login.spec.ts
-        #   name: Test3
+          - testFile: playwright_automation/tests/example.spec.ts
+            name: Test1
+          - testFile: playwright_automation/tests/home.spec.ts
+            name: Test2
 
     steps:
       - name: Checkout code
@@ -37,16 +35,16 @@ jobs:
       - name: Run test file and capture status
         continue-on-error: true
         run: |
-            set +e
-            xvfb-run npx playwright test ${{ matrix.testFile }}
-            STATUS=$?
-            echo "Playwright exited with code $STATUS"
-            if [ "$STATUS" -eq 0 ]; then
-              echo "passed" > status.txt
-            else
-              echo "failed" > status.txt
-            fi
-            exit $STATUS
+          set +e
+          xvfb-run npx playwright test ${{ matrix.testFile }}
+          STATUS=$?
+          echo "Playwright exited with code $STATUS"
+          if [ "$STATUS" -eq 0 ]; then
+            echo "passed" > status.txt
+          else
+            echo "failed" > status.txt
+          fi
+          exit $STATUS
         working-directory: playwright_automation
 
       - name: Rename and zip HTML + JSON report
@@ -56,98 +54,57 @@ jobs:
           mv playwright_automation/playwright-report "$REPORT_DIR/"
           mv playwright_automation/status.txt "$REPORT_DIR/"
           mv playwright_automation/report.json "$REPORT_DIR/"
-          zip -r "$REPORT_DIR.zip" "$REPORT_DIR"
-
-
-      
+          zip -r "$REPORT_DIR.zip" "$REPORT_DIR/"
 
       - name: Upload zipped report
         uses: actions/upload-artifact@v4
         with:
-            name: report-${{ matrix.name }}
-            path: report-${{ matrix.name }}.zip
-
-  
+          name: report-${{ matrix.name }}
+          path: report-${{ matrix.name }}.zip
 
   merge-reports:
-      runs-on: ubuntu-latest
-      needs: test
-      steps:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-      
-      - name: Debug checkout content
-        run: |
-            echo "Current working directory: $PWD"
-            echo "Files:"
-            ls -la
-      
+          node-version: '20'
+
       - name: Install dependencies
         run: npm install
-        working-directory: playwright_automation
-          
-      - name: Install Playwright CLI (if needed)
-        run: npm install --no-save playwright
         working-directory: playwright_automation
 
       - name: Download all reports
         uses: actions/download-artifact@v4
         with:
           path: all-reports
-          merge-multiple: true  
+          merge-multiple: true
 
-      - name: Install Playwright Test CLI (correct package)
-        run: npm install --save-dev @playwright/test
-        working-directory: playwright_automation
-      
       - name: Merge JSONs and generate HTML report
         run: |
           mkdir merged-report
-      
+          
           # Unzip all .zip artifacts
           mkdir extracted-reports
           for zip in all-reports/*.zip; do
             unzip -q "$zip" -d extracted-reports
           done
-      
-          echo "Contents of extracted-reports:"
-          find extracted-reports
-      
+
           # Place report.json files inside playwright_automation/json-results
           mkdir -p playwright_automation/json-results
-          i=1
-          find extracted-reports -type f -name 'report.json' | while read f; do
-            mkdir -p "playwright_automation/json-results/run-$i"
-            cp "$f" "playwright_automation/json-results/run-$i/report.json"
-            i=$((i + 1))
-          done
-      
-          echo "JSON structure for merge:"
-          find playwright_automation/json-results
-      
-          # 🔍 Debug: Check JSON content
-          echo "Checking report contents:"
-          cat playwright_automation/json-results/run-1/report.json | head -n 20
+          find extracted-reports -type f -name 'report.json' -exec cp {} playwright_automation/json-results/ \;
 
-          echo "Listing files in json-results:"
-          ls -R playwright_automation/json-results
-      
-          # ✅ Run from inside playwright_automation
+          # Merge and generate report
           cd playwright_automation
-          npx playwright merge-reports --reporter html json-results
+          npx playwright merge-reports --reporter html playwright_automation/json-results/*
           mv playwright-report ../merged-report/
-      
-        
-      
+
       - name: Upload merged HTML report
         uses: actions/upload-artifact@v4
         with:
-            name: merged-html-report
-            path: merged-report
-      
-
+          name: merged-html-report
+          path: merged-report
