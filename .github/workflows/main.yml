@@ -52,7 +52,8 @@ jobs:
           echo "Checking for playwright_automation..."
           ls -la playwright-report  
 
-      - name: Upload test-results folder
+      - name: Upload test results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
             name: shard-${{ matrix.shard }}-results
@@ -79,12 +80,15 @@ jobs:
         
 
       
-      - name: Merge reports and generate HTML
+      - name: Merge test reports
         run: |
-          REPORT_DIRS=$(find downloaded-reports -type d -name test-results)
-          echo "Merging from directories: $REPORT_DIRS"
-          npx playwright merge-reports --reporter html $REPORT_DIRS
-        working-directory: playwright_automation
+          if [ -d "downloaded-reports" ]; then
+            REPORT_DIRS=$(find downloaded-reports -type d -name test-results)
+            echo "Merging from directories: $REPORT_DIRS"
+            npx playwright merge-reports --reporter html $REPORT_DIRS
+          else
+            echo "No downloaded-reports directory found. Skipping report merge."
+          fi
        
 
       - name: Upload merged HTML report
