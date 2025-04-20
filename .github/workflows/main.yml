@@ -71,13 +71,6 @@ jobs:
           path: downloaded-reports
           merge-multiple: true
 
-      - name:  List files in downloaded-reports
-        run: |
-            echo "Checking contents of downloaded-reports..."
-            ls -la downloaded-reports  
-            echo "Checking contents of downloaded-reports..."
-            ls -R downloaded-reports  
-
 
      
       - name: Install Playwright
