@@ -34,7 +34,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright test
-        run: npx playwright test ${{ matrix.testFile }} --reporter=json
+        run: xvfb-run npx playwright test ${{ matrix.testFile }} --reporter=json
         working-directory: playwright_automation
 
       - name: Move JSON report to folder
