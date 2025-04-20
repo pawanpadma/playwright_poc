@@ -46,3 +46,4 @@ jobs:
         with:
           name: merged-playwright-report
           path: playwright_automation/playwright-report/
+          
