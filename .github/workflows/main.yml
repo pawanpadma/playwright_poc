@@ -59,48 +59,45 @@ jobs:
             name: shard-${{ matrix.shard }}-results
             path: playwright_automation/test-results/
 
-  merge:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download JSON reports for all shards
-        uses: actions/download-artifact@v4
-        with:
-          path: downloaded-reports
-          merge-multiple: true
-
-      - name: Debug downloaded reports path
-        run: |
-          echo "Listing contents of downloaded-reports:"
-          ls -la downloaded-reports
-
-      - name: Install Playwright
-        run: npm install
-        working-directory: playwright_automation
-
-      - name: Merge test reports
-        run: |
-          echo "Current directory: $(pwd)"
-          if [ -d "../downloaded-reports" ]; then
-            REPORT_DIRS=$(find ../downloaded-reports -type f -name "test-results.json" -exec dirname {} \;)
-            echo "Merging from directories: $REPORT_DIRS"
-            npx playwright merge-reports --reporter html $REPORT_DIRS
-          else
-            echo "No downloaded-reports directory found. Skipping report merge."
-          fi
-        working-directory: playwright_automation
-      
-
-      - name: Check playwright-report directory
-        run: |
-          echo "Contents of playwright-report:"
-          ls -la playwright-report
-
-      - name: Upload merged HTML report
-        uses: actions/upload-artifact@v4
-        with:
-          name: merged-html-report
-          path: playwright-report/
+  merge-reports:
+              runs-on: ubuntu-latest
+          
+              steps:
+                - name: Checkout target repo
+                  uses: actions/checkout@v4
+          
+                - name: Download artifacts from another workflow
+                  uses: actions/download-artifact@v4
+                  with:
+                    path: downloaded-reports
+                    merge-multiple: true
+                    repository: pawanpadma/playwright_poc
+                    run-id: 14561771576
+          
+                - name: List contents of downloaded-reports
+                  run: |
+                    echo "Listing contents of downloaded-reports:"
+                    find downloaded-reports
+          
+                - name: Setup Node.js
+                  uses: actions/setup-node@v4
+                  with:
+                    node-version: 20
+          
+                - name: Install dependencies
+                  working-directory: playwright_automation
+                  run: npm install
+          
+                - name: Merge Playwright reports
+                  working-directory: playwright_automation
+                  run: |
+                    echo "Current directory: $(pwd)"
+                    REPORT_DIRS=$(find ../downloaded-reports -type f -name "test-results.json" -exec dirname {} \; | sort -u)
+                    echo "Merging from directories: $REPORT_DIRS"
+                    npx playwright merge-reports --reporter html $REPORT_DIRS
+          
+                - name: Upload merged HTML report
+                  uses: actions/upload-artifact@v4
+                  with:
+                    name: merged-playwright-report
+                    path: playwright_automation/playwright-report/
