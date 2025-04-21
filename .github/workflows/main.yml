@@ -24,6 +24,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: playwright_automation
+        continue-on-error: true
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
