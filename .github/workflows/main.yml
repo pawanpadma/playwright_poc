@@ -1,105 +1,74 @@
-name: Playwright Test with Sharding and Merged Report
+name: Playwright Tests with Sharding and Report Merge
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
 
 jobs:
-  test:
+  test-and-merge:
+    name: Run Sharded Tests and Merge Reports
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        shard: [1, 2]
+        shard: [1, 2]  # Adjust for number of shards (e.g., [1,2,3,4] for 4 shards)
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Install dependencies
+        run: npm ci
         working-directory: playwright_automation
-        run: npm install
 
-      - name: Run Playwright tests (shard 2)
+      - name: Run Playwright tests (shard ${{ matrix.shard }})
         working-directory: playwright_automation
-        continue-on-error: true
-        env:
-          REPORT_JSON: test-results/shard-2/test-results/test-results.json
         run: |
-          mkdir -p test-results/shard-2/test-results
           xvfb-run npx playwright test \
             --config=playwright.config.ts \
-            --shard=2/2
+            --shard=${{ matrix.shard }}/2
 
-      - name: Debug test-results contents
-        if: always()
-        run: |
-          echo "Contents of test-results:"
-          find playwright_automation/test-results
-
-      - name: Upload test results
-        if: always()
+      - name: Upload shard report
         uses: actions/upload-artifact@v4
         with:
           name: shard-${{ matrix.shard }}-results
-          path: playwright_automation/test-results/
+          path: playwright_automation/playwright-report
 
-  merge:
+  merge-reports:
+    name: Merge Playwright Reports
     runs-on: ubuntu-latest
-    needs: test
-    if: always()
+    needs: test-and-merge
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download JSON reports for all shards
+      - name: Download all shard artifacts
         uses: actions/download-artifact@v4
         with:
           path: downloaded-reports
           merge-multiple: true
 
-      - name: Debug downloaded reports path
+      - name: List downloaded reports
         run: |
-          echo "Listing contents of downloaded-reports:"
+          echo "Listing downloaded content:"
           find downloaded-reports
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Playwright
-        working-directory: playwright_automation
-        run: npm install
-
-      - name: Merge reports
-        working-directory: .
+      - name: Merge Playwright reports
         run: |
-          echo "Current directory: $(pwd)"
-          REPORT_DIRS=$(find downloaded-reports -type f -name "test-results.json" -exec dirname {} \; | sort -u)
-          
-          if [ -z "$REPORT_DIRS" ]; then
-            echo "No test-results.json files found. Skipping merge."
-          else
-            echo "Merging from directories: $REPORT_DIRS"
-            npx playwright merge-reports --reporter html $REPORT_DIRS
-          fi
-
-      - name: Check playwright-report directory
-        if: always()
-        run: |
-          echo "Contents of playwright-report:"
-          ls -la playwright_automation/playwright-report || echo "Report not found."
+          REPORT_DIRS=$(find downloaded-reports -type f -name "*.jsonl" -exec dirname {} \; | sort -u)
+          echo "Merging reports from: $REPORT_DIRS"
+          npx playwright merge-reports --reporter html $REPORT_DIRS
 
       - name: Upload merged HTML report
-        if: always()
         uses: actions/upload-artifact@v4
         with:
-            name: merged-html-report
-            path: playwright_automation/playwright-report/
-            if-no-files-found: warn
+          name: merged-html-report
+          path: playwright-report/
