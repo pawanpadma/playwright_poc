@@ -28,11 +28,17 @@ jobs:
       - name: Run Playwright tests (Shard ${{ matrix.shard }})
         working-directory: playwright_automation
         continue-on-error: true
+        env:
+          REPORT_JSON: test-results/test-results.json
         run: |
           mkdir -p test-results
-          xvfb-run npx playwright test --config=playwright.config.ts \
-            --shard=${{ matrix.shard }}/2 \
-            --reporter=json=test-results/test-results.json
+          xvfb-run npx playwright test --config=playwright.config.ts --shard=${{ matrix.shard }}/2
+
+      - name: Debug test-results contents
+        if: always()
+        run: |
+          echo "Contents of test-results:"
+          find playwright_automation/test-results
 
       - name: Upload test results
         if: always()
@@ -44,7 +50,7 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     needs: test
-    if: always() # always run even if test jobs failed
+    if: always()
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
