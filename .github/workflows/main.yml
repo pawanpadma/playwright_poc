@@ -34,9 +34,8 @@ jobs:
             --config=playwright.config.ts \
             --shard=${{ matrix.shard }}/2 \
             --reporter=json \
-            --output=test-results/shard-${{ matrix.shard }}/test-results \
             > test-results/shard-${{ matrix.shard }}/test-results/test-results.json
-            
+
       - name: Debug test-results contents
         if: always()
         run: |
