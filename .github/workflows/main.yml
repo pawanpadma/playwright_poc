@@ -4,19 +4,18 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-  pull_request:
 
 jobs:
-  test-and-merge:
-    name: Run Sharded Tests and Merge Reports
+  test:
+    name: Run Shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        shard: [1, 2]  # Adjust for number of shards (e.g., [1,2,3,4] for 4 shards)
+        shard: [1, 2] # Make dynamic if needed
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -25,50 +24,49 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
         working-directory: playwright_automation
 
       - name: Run Playwright tests (shard ${{ matrix.shard }})
-        working-directory: playwright_automation
-        continue-on-error: true
         run: |
+          mkdir -p blob-report
           xvfb-run npx playwright test \
             --config=playwright.config.ts \
-            --shard=${{ matrix.shard }}/2
+            --shard=${{ matrix.shard }}/2 \
+            --reporter=blob
+        working-directory: playwright_automation
 
-      - name: Upload shard report
+      - name: Upload shard ${{ matrix.shard }} results
         uses: actions/upload-artifact@v4
         with:
           name: shard-${{ matrix.shard }}-results
-          path: playwright_automation/playwright-report
+          path: playwright_automation/blob-report
 
-  merge-reports:
-    name: Merge Playwright Reports
+  merge:
+    name: Merge Reports
     runs-on: ubuntu-latest
-    needs: test-and-merge
+    needs: test
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download all shard artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: downloaded-reports
           merge-multiple: true
 
-      - name: List downloaded reports
-        run: |
-          echo "Listing downloaded content:"
-          find downloaded-reports
+      - name: List downloaded files
+        run: find downloaded-reports
 
-      - name: Merge Playwright reports
+      - name: Merge Playwright blob reports
         run: |
           REPORT_DIRS=$(find downloaded-reports -type f -name "*.jsonl" -exec dirname {} \; | sort -u)
-          echo "Merging reports from: $REPORT_DIRS"
+          echo "Merging from: $REPORT_DIRS"
           npx playwright merge-reports --reporter html $REPORT_DIRS
 
-      - name: Upload merged HTML report
+      - name: Upload final merged HTML report
         uses: actions/upload-artifact@v4
         with:
           name: merged-html-report
