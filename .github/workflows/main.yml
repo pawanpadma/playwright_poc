@@ -25,16 +25,15 @@ jobs:
         working-directory: playwright_automation
         run: npm install
 
-      - name: Run Playwright tests (Shard ${{ matrix.shard }})
+      - name: Run Playwright tests (shard 2)
         working-directory: playwright_automation
-        continue-on-error: true
+        env:
+          REPORT_JSON: test-results/shard-2/test-results/test-results.json
         run: |
-          mkdir -p test-results/shard-${{ matrix.shard }}/test-results
+          mkdir -p test-results/shard-2/test-results
           xvfb-run npx playwright test \
             --config=playwright.config.ts \
-            --shard=${{ matrix.shard }}/2 \
-            --reporter=json \
-            > test-results/shard-${{ matrix.shard }}/test-results/test-results.json
+            --shard=2/2
 
       - name: Debug test-results contents
         if: always()
