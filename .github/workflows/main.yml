@@ -35,9 +35,15 @@ jobs:
         working-directory: playwright_automation
         continue-on-error: true
 
-      - name: Upload blob report to GitHub Actions Artifacts
+      - name: echo Actions Artifacts
+      
+        run: |
+            echo "Current working directory: $PWD"
             echo "Files:"
             ls -la
+
+      - name: Upload blob report to GitHub Actions Artifacts
+      
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
