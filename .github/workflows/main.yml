@@ -58,10 +58,12 @@ jobs:
           path: downloaded-reports
           merge-multiple: true
 
-      - name: Unzip each report directly into a flat structure
+      - name: Unzip each report into its own folder
         run: |
             for zipfile in downloaded-reports/*.zip; do
-              unzip -q "$zipfile" -d "downloaded-reports"
+              foldername=$(basename "$zipfile" .zip)
+              mkdir -p "downloaded-reports/$foldername"
+              unzip -q "$zipfile" -d "downloaded-reports/$foldername"
             done
             rm downloaded-reports/*.zip
 
@@ -71,7 +73,7 @@ jobs:
       - name: Merge Playwright reports
         run: |
           REPORT_DIRS=$(find downloaded-reports -type f -name "report.jsonl" -exec dirname {} \; | sort -u)
-          echo "Merging from the following directories:"
+          echo "Merging reports from:"
           echo "$REPORT_DIRS"
           echo "$REPORT_DIRS" | xargs npx playwright merge-reports --reporter html
 
