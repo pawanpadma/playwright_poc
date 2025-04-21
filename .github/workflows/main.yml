@@ -58,12 +58,12 @@ jobs:
           path: downloaded-reports
           merge-multiple: true
 
-      - name: Unzip each report into its own folder
+      - name: Unzip each report into its own blob-report folder
         run: |
             for zipfile in downloaded-reports/*.zip; do
               foldername=$(basename "$zipfile" .zip)
-              mkdir -p "downloaded-reports/$foldername"
-              unzip -q "$zipfile" -d "downloaded-reports/$foldername"
+              mkdir -p "downloaded-reports/$foldername/blob-report"
+              unzip -q "$zipfile" -d "downloaded-reports/$foldername/blob-report"
             done
             rm downloaded-reports/*.zip
 
