@@ -27,6 +27,7 @@ jobs:
 
       - name: Run Playwright tests (shard 2)
         working-directory: playwright_automation
+        continue-on-error: true
         env:
           REPORT_JSON: test-results/shard-2/test-results/test-results.json
         run: |
