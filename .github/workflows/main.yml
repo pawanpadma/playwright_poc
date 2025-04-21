@@ -58,6 +58,12 @@ jobs:
           path: downloaded-reports
           merge-multiple: true
 
+      - name: Unzip all downloaded reports dynamically
+        run: |
+            for zipfile in downloaded-reports/*.zip; do
+              unzip "$zipfile" -d downloaded-reports/
+            done      
+
       - name: List downloaded files
         run: find downloaded-reports
 
