@@ -11,8 +11,8 @@ export default defineConfig({
   fullyParallel: true,
   
 
-  //reporter: [['blob', { outputDir: 'test-results/blob-report' }]],
-  reporter: process.env.CI ? 'blob' : 'html',
+  reporter: [['blob', { outputDir: 'test-results/blob-report' }]],
+  //reporter: process.env.CI ? 'blob' : 'html',
 
   use: {
     baseURL: 'https://deal4loans.com',
