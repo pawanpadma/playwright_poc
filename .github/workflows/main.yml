@@ -40,7 +40,7 @@ jobs:
         run: |
             echo "Current working directory: $PWD"
             echo "Files:"
-            ls -la playwright_automation
+            ls -la playwright_poc
 
       - name: Upload blob report to GitHub Actions Artifacts
       
