@@ -11,7 +11,7 @@ export default defineConfig({
   fullyParallel: true,
   
 
-  reporter: [['blob', { outputDir: 'test-results/blob-report' }]],
+  reporter: [['blob'], ['list']],
   //reporter: process.env.CI ? 'blob' : 'html',
 
   use: {

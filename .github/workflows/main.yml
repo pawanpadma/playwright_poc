@@ -35,12 +35,8 @@ jobs:
         working-directory: playwright_automation
         continue-on-error: true
 
-      - name: echo Actions Artifacts
-      
-        run: |
-            echo "Current working directory: $PWD"
-            echo "Files:"
-            ls -la playwright_poc
+      - name: Check if blob report exists
+        run: ls -R .playwright || echo "Blob report directory not found"
 
       - name: Upload blob report to GitHub Actions Artifacts
       
@@ -48,7 +44,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: blob-report-${{ matrix.shardIndex }}
-          path: .playwright/blob-report
+          path:  ./playwright_automation/.playwright/blob-report
           retention-days: 1
 
   merge-reports:
