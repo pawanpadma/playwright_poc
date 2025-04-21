@@ -58,11 +58,13 @@ jobs:
           path: downloaded-reports
           merge-multiple: true
 
-      - name: Unzip all downloaded reports dynamically
+      - name: Unzip all downloaded reports into unique folders
         run: |
             for zipfile in downloaded-reports/*.zip; do
-              unzip "$zipfile" -d downloaded-reports/
-            done      
+              foldername=$(basename "$zipfile" .zip)
+              mkdir -p "downloaded-reports/$foldername"
+              unzip -q "$zipfile" -d "downloaded-reports/$foldername"
+            done     
 
       - name: List downloaded files
         run: find downloaded-reports
