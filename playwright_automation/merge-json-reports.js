@@ -27,3 +27,4 @@ fs.writeFileSync(`${outputDir}/merged-report.json`, JSON.stringify({
 }, null, 2));
 
 console.log(`Merged ${mergedResults.length} report(s) into merged-report.json`);
+
