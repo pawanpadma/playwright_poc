@@ -32,8 +32,8 @@ jobs:
           REPORT_JSON: test-results/shard-${{ matrix.shard }}/test-results.json
 
         run: |
-          mkdir -p test-results/shard-${{ matrix.shard }}
-          xvfb-run npx playwright test --config=playwright.config.ts --shard=${{ matrix.shard }}/2
+          mkdir -p test-results/shard-${{ matrix.shard }}/test-results
+          xvfb-run npx playwright test --config=playwright.config.ts --shard=${{ matrix.shard }}/2 --output=test-results/shard-${{ matrix.shard }}/test-results
 
 
       - name: Debug test-results contents
