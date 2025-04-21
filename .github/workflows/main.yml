@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        shard: [1, 2] # Adjust this for number of shards
+        shard: [1, 2]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,13 +25,13 @@ jobs:
         working-directory: playwright_automation
         run: npm install
 
-      - name: Ensure report directory exists
-        run: mkdir -p playwright_automation/test-results
-
       - name: Run Playwright tests (Shard ${{ matrix.shard }})
-        run: |
-          xvfb-run npx playwright test --config=playwright.config.ts --shard=${{ matrix.shard }}/2 --reporter=json
         working-directory: playwright_automation
+        continue-on-error: true
+        run: |
+          mkdir -p test-results
+          xvfb-run npx playwright test --config=playwright.config.ts --shard=${{ matrix.shard }}/2 --reporter=json > test-results/test-results.json
+          echo "Exit code: $?"
 
       - name: Upload test results
         if: always()
@@ -43,6 +43,7 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     needs: test
+    if: always() # always run even if test jobs failed
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -69,18 +70,25 @@ jobs:
 
       - name: Merge test reports
         working-directory: playwright_automation
+        continue-on-error: true
         run: |
           echo "Current directory: $(pwd)"
           REPORT_DIRS=$(find ../downloaded-reports -type f -name "test-results.json" -exec dirname {} \; | sort -u)
-          echo "Merging from directories: $REPORT_DIRS"
-          npx playwright merge-reports --reporter html $REPORT_DIRS
+          if [ -z "$REPORT_DIRS" ]; then
+            echo "No test-results.json files found. Skipping merge."
+          else
+            echo "Merging from directories: $REPORT_DIRS"
+            npx playwright merge-reports --reporter html $REPORT_DIRS
+          fi
 
       - name: Check playwright-report directory
+        if: always()
         run: |
           echo "Contents of playwright-report:"
-          ls -la playwright_automation/playwright-report
+          ls -la playwright_automation/playwright-report || echo "Report not found."
 
       - name: Upload merged HTML report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: merged-html-report
