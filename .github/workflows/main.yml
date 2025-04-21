@@ -30,7 +30,7 @@ jobs:
       - name: Run Playwright tests (shard ${{ matrix.shard }})
         run: |
           
-          xvfb-run npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }} --reporter=blob
+          xvfb-run npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
         working-directory: playwright_automation
         continue-on-error: true
@@ -39,9 +39,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: shard-${{ matrix.shard }}-results
-          path: blob-report/
+          path: test-results/blob-report/
           if-no-files-found: error
           retention-days: 3
+          
 
   merge:
     name: Merge Reports
