@@ -81,6 +81,7 @@ jobs:
         run: |
           echo "Current directory: $(pwd)"
           REPORT_DIRS=$(find downloaded-reports -type f -name "test-results.json" -exec dirname {} \; | sort -u)
+          
           if [ -z "$REPORT_DIRS" ]; then
             echo "No test-results.json files found. Skipping merge."
           else
@@ -98,5 +99,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: merged-html-report
-          path: playwright_automation/playwright-report/
+            name: merged-html-report
+            path: playwright_automation/playwright-report/
+            if-no-files-found: warn
