@@ -29,19 +29,19 @@ jobs:
 
       - name: Run Playwright tests (shard ${{ matrix.shard }})
         run: |
-          mkdir -p blob-report
-          xvfb-run npx playwright test \
-            --config=playwright.config.ts \
-            --shard=${{ matrix.shard }}/2 \
-            --reporter=blob
+          
+          xvfb-run npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }} --reporter=blob
+
         working-directory: playwright_automation
         continue-on-error: true
 
-      - name: Upload shard ${{ matrix.shard }} results
+      - name: Upload blob report artifact
         uses: actions/upload-artifact@v4
         with:
           name: shard-${{ matrix.shard }}-results
-          path: playwright_automation/blob-report
+          path: blob-report/
+          if-no-files-found: error
+          retention-days: 3
 
   merge:
     name: Merge Reports
@@ -52,13 +52,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download all artifacts
+      - name: Download all shard artifacts
         uses: actions/download-artifact@v4
         with:
           path: downloaded-reports
           merge-multiple: true
+          repository: ${{ github.repository }}
+          run-id: ${{ github.run_id }}
 
-      - name: Unzip each report into its own blob-report folder
+      - name: Unzip all reports into separate folders
         run: |
             for zipfile in downloaded-reports/*.zip; do
               foldername=$(basename "$zipfile" .zip)
@@ -67,15 +69,14 @@ jobs:
             done
             rm downloaded-reports/*.zip
 
-      - name: List downloaded files
-        run: find downloaded-reports
-
-      - name: Merge Playwright reports
+      - name: Find all blob-report folders
         run: |
-          REPORT_DIRS=$(find downloaded-reports -type f -name "report.jsonl" -exec dirname {} \; | sort -u)
-          echo "Merging reports from:"
-          echo "$REPORT_DIRS"
-          echo "$REPORT_DIRS" | xargs npx playwright merge-reports --reporter html
+              REPORT_DIRS=$(find downloaded-reports -type f -name "data_*.jsonl" -exec dirname {} \; | sort -u)
+              echo "Merging reports from:"
+              echo "$REPORT_DIRS"
+              echo "$REPORT_DIRS" | xargs npx playwright merge-reports --reporter html
+
+    
 
       - name: Upload final merged HTML report
         uses: actions/upload-artifact@v4

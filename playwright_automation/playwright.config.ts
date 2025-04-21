@@ -2,8 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 import * as process from 'process';
 
 const reporters: any[] = [
-  ['list'], // CLI output
-  ['html', { outputFolder: 'playwright-report', open: 'never' }],
+  [['blob']]
 ];
 
 // Conditionally add JSON reporter if env variable is set
