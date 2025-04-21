@@ -31,7 +31,16 @@ jobs:
         run: |
           
           xvfb-run npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
-          ls .playwright/blob-report/
+          STATUS=$?
+          echo "Playwright exited with code $STATUS"
+      
+          if [ "$STATUS" -eq 0 ]; then
+            echo "passed" > status.txt
+          else
+            echo "failed" > status.txt
+          fi
+      
+          exit $STATUS
 
         working-directory: playwright_automation
         continue-on-error: true
