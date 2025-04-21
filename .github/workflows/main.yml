@@ -29,10 +29,12 @@ jobs:
         working-directory: playwright_automation
         continue-on-error: true
         env:
-          REPORT_JSON: test-results/test-results.json
+          REPORT_JSON: test-results/shard-${{ matrix.shard }}/test-results.json
+
         run: |
-          mkdir -p test-results
+          mkdir -p test-results/shard-${{ matrix.shard }}
           xvfb-run npx playwright test --config=playwright.config.ts --shard=${{ matrix.shard }}/2
+
 
       - name: Debug test-results contents
         if: always()
