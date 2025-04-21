@@ -9,9 +9,10 @@ export default defineConfig({
   timeout: 20 * 1000,
   workers: 2,
   fullyParallel: true,
-  outputDir: 'test-results',
+  
 
-  reporter: [['blob', { outputDir: 'test-results/blob-report' }]],
+  //reporter: [['blob', { outputDir: 'test-results/blob-report' }]],
+  reporter: process.env.CI ? 'blob' : 'html',
 
   use: {
     baseURL: 'https://deal4loans.com',
@@ -20,6 +21,7 @@ export default defineConfig({
     navigationTimeout: 90 * 1000,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    
   },
 
   projects: [

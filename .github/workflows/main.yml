@@ -1,96 +1,72 @@
-name: Playwright Tests with Sharding and Report Merge
+name: Playwright Tests
 
 on:
-  workflow_dispatch:
   push:
-    branches: [main]
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
-  test:
-    name: Run Shard ${{ matrix.shard }}
+  playwright-tests:
+    timeout-minutes: 60
     runs-on: ubuntu-latest
-
     strategy:
+      fail-fast: false
       matrix:
-        shard: [1, 2] # Make dynamic if needed
-
+        shardIndex: [1, 2]
+        shardTotal: [2]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: lts/*
 
       - name: Install dependencies
-        run: npm install
-        working-directory: playwright_automation
+        run: npm ci
 
-      - name: Run Playwright tests (shard ${{ matrix.shard }})
-        run: |
-          
-          xvfb-run npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
-          STATUS=$?
-          echo "Playwright exited with code $STATUS"
-      
-          if [ "$STATUS" -eq 0 ]; then
-            echo "passed" > status.txt
-          else
-            echo "failed" > status.txt
-          fi
-      
-          exit $STATUS
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
 
-        working-directory: playwright_automation
-        continue-on-error: true
+      - name: Run Playwright tests
+        run: xvfb-run npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
-      - name: Upload blob report artifact
+      - name: Upload blob report to GitHub Actions Artifacts
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: shard-${{ matrix.shard }}-results
-          path: .playwright/blob-report/
-          if-no-files-found: error
-          retention-days: 3
-          
+          name: blob-report-${{ matrix.shardIndex }}
+          path: .playwright/blob-report
+          retention-days: 1
 
-  merge:
-    name: Merge Reports
+  merge-reports:
+    name: Merge Shard Reports
+    if: ${{ !cancelled() }}
+    needs: [playwright-tests]
     runs-on: ubuntu-latest
-    needs: test
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Download all shard artifacts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download blob reports from GitHub Actions Artifacts
         uses: actions/download-artifact@v4
         with:
-          path: downloaded-reports
+          path: all-blob-reports
+          pattern: blob-report-*
           merge-multiple: true
-          repository: ${{ github.repository }}
-          run-id: ${{ github.run_id }}
 
-      - name: Unzip all reports into separate folders
-        run: |
-            for zipfile in downloaded-reports/*.zip; do
-              foldername=$(basename "$zipfile" .zip)
-              mkdir -p "downloaded-reports/$foldername/blob-report"
-              unzip -q "$zipfile" -d "downloaded-reports/$foldername/blob-report"
-            done
-            rm downloaded-reports/*.zip
+      - name: Merge into HTML Report
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
 
-      - name: Find all blob-report folders
-        run: |
-              REPORT_DIRS=$(find downloaded-reports -type f -name "data_*.jsonl" -exec dirname {} \; | sort -u)
-              echo "Merging reports from:"
-              echo "$REPORT_DIRS"
-              echo "$REPORT_DIRS" | xargs npx playwright merge-reports --reporter html
-
-    
-
-      - name: Upload final merged HTML report
+      - name: Upload HTML report
         uses: actions/upload-artifact@v4
         with:
-          name: merged-html-report
-          path: playwright-report/
+          name: html-report--attempt-${{ github.run_attempt }}
+          path: playwright-report
+          retention-days: 14
