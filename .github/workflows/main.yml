@@ -69,12 +69,15 @@ jobs:
       - name: List downloaded files
         run: find downloaded-reports
 
-      - name: Merge Playwright blob reports
+      - name: Merge Playwright reports
         run: |
           REPORT_DIRS=$(find downloaded-reports -type f -name "*.jsonl" -exec dirname {} \; | sort -u)
-          echo "Merging from: $REPORT_DIRS"
-          npx playwright merge-reports --reporter html $REPORT_DIRS
-
+          echo "Merging from:"
+          echo "$REPORT_DIRS"
+          
+          # Pass as arguments correctly using xargs
+          echo "$REPORT_DIRS" | xargs npx playwright merge-reports --reporter html
+          
       - name: Upload final merged HTML report
         uses: actions/upload-artifact@v4
         with:
