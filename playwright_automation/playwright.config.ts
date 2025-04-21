@@ -1,14 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 import * as process from 'process';
 
-const reporters: any[] = [
-  [['blob']]
-];
 
-// Conditionally add JSON reporter if env variable is set
-if (process.env.REPORT_JSON) {
-  reporters.unshift(['json', { outputFile: process.env.REPORT_JSON }]);
-}
+
 
 export default defineConfig({
   testDir: './tests',
@@ -17,7 +11,7 @@ export default defineConfig({
   fullyParallel: true,
   outputDir: 'test-results',
 
-  reporter: reporters,
+  reporter: [['blob']],
 
   use: {
     baseURL: 'https://deal4loans.com',
