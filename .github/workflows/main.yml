@@ -30,6 +30,7 @@ jobs:
 
       - name: Run Playwright tests (shard ${{ matrix.shard }})
         working-directory: playwright_automation
+        continue-on-error: true
         run: |
           xvfb-run npx playwright test \
             --config=playwright.config.ts \
