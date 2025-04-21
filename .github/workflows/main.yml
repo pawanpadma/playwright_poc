@@ -77,12 +77,11 @@ jobs:
         working-directory: playwright_automation
         run: npm install
 
-      - name: Merge test reports
-        working-directory: playwright_automation
-        continue-on-error: true
+      - name: Merge reports
+        working-directory: .
         run: |
           echo "Current directory: $(pwd)"
-          REPORT_DIRS=$(find ../downloaded-reports -type f -name "test-results.json" -exec dirname {} \; | sort -u)
+          REPORT_DIRS=$(find downloaded-reports -type f -name "test-results.json" -exec dirname {} \; | sort -u)
           if [ -z "$REPORT_DIRS" ]; then
             echo "No test-results.json files found. Skipping merge."
           else
