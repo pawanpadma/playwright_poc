@@ -28,14 +28,14 @@ jobs:
       - name: Run Playwright tests (Shard ${{ matrix.shard }})
         working-directory: playwright_automation
         continue-on-error: true
-        env:
-          REPORT_JSON: test-results/shard-${{ matrix.shard }}/test-results.json
+        # env:
+        #   REPORT_JSON: test-results/shard-${{ matrix.shard }}/test-results.json
 
         run: |
-          mkdir -p test-results/shard-${{ matrix.shard }}/test-results
-          xvfb-run npx playwright test --config=playwright.config.ts --shard=${{ matrix.shard }}/2 --output=test-results/shard-${{ matrix.shard }}/test-results
-
-
+         for dir in downloaded-reports/shard-*; do
+           mkdir -p "$dir/test-results"
+           mv "$dir/test-results.json" "$dir/test-results/test-results.json"
+         done
       - name: Debug test-results contents
         if: always()
         run: |
