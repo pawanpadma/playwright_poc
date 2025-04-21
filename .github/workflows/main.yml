@@ -30,8 +30,9 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p test-results
-          xvfb-run npx playwright test --config=playwright.config.ts --shard=${{ matrix.shard }}/2 --reporter=json > test-results/test-results.json
-          echo "Exit code: $?"
+          xvfb-run npx playwright test --config=playwright.config.ts \
+            --shard=${{ matrix.shard }}/2 \
+            --reporter=json=test-results/test-results.json
 
       - name: Upload test results
         if: always()
