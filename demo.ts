@@ -3,7 +3,7 @@ import { test as base } from '@playwright/test';
 type MyFixtures = {
   accessToken: string;
 };
-//export const test = base.extend({});
+//export const test = base.extend<MyFixtures>({});
 export const test = base.extend({
   accessToken: async ({}, use) => {
     const token = await getAccessToken();
