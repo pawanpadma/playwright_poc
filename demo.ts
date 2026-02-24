@@ -1,0 +1,25 @@
+import { test as base } from '@playwright/test';
+
+export const test = base.extend({});
+
+// Global hooks for entire project
+test.beforeAll(async () => {
+  console.log('>>> BEFORE ALL TESTS IN FILE');
+});
+
+test.afterAll(async () => {
+  console.log('>>> AFTER ALL TESTS IN FILE');
+});
+
+test.beforeEach(async ({ page }) => {
+  console.log('>>> BEFORE EACH TEST');
+  // Example: Navigate to base URL
+  await page.goto('/');
+});
+
+test.afterEach(async ({ page }) => {
+  console.log('>>> AFTER EACH TEST');
+  // Example: Screenshot on failure
+});
+
+export const expect = test.expect;
