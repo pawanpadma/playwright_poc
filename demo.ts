@@ -48,4 +48,20 @@ test.afterEach(async ({ page }) => {
   // Example: Screenshot on failure
 });
 
+
+import { test as base } from '@playwright/test';
+
+export const test = base.extend({
+  page: async ({ page }, use) => {
+    // Runs before each test
+    await page.goto('https://your-url.com');
+
+    await use(page);
+
+    // Optional cleanup after each
+  }
+});
+
+export { expect } from '@playwright/test';
+
 export const expect = test.expect;
