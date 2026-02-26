@@ -1,5 +1,15 @@
 import { test as base } from '@playwright/test';
+import { chromium } from '@playwright/test';
 
+(async () => {
+  const browser = await chromium.launch({ headless: false });
+
+  // This is incognito
+  const context = await browser.newContext();
+
+  const page = await context.newPage();
+  await page.goto('https://your-url.com');
+})();
 type MyFixtures = {
   accessToken: string;
 };
